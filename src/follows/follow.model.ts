@@ -1,6 +1,5 @@
 import { InferModel } from "drizzle-orm"
 import { index, pgTable, timestamp, varchar } from "drizzle-orm/pg-core"
-import { ParsedDates, ParsedDatesInsert } from "@/utils/parse-dates"
 import { user } from "@/users/users.model"
 
 export const follow = pgTable(
@@ -27,12 +26,10 @@ export const follow = pgTable(
     (follow) => ({
         followerIndex: index("follows__follower_id__idx").on(follow.followerId),
         followingIndex: index("follows__followee_id__idx").on(
-            follow.followeeId
+            follow.followeeId,
         ),
-    })
+    }),
 )
 
-export type Follow = ParsedDates<InferModel<typeof follow>>
-export type InsertFollow = ParsedDatesInsert<
-    InferModel<typeof follow, "insert">
->
+export type Follow = InferModel<typeof follow>
+export type InsertFollow = InferModel<typeof follow, "insert">

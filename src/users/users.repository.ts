@@ -1,10 +1,11 @@
 import { DefaultDrizzlePgRepository } from "@/repositories/default-drizzle-pg"
 import { user, User, InsertUser } from "@/users/users.model"
 import { DrizzleService } from "@/drizzle/drizzle.service"
-import { UsersRepository as IUsersRepository } from "@/repositories"
+import { IUsersRepository } from "@/repositories"
+import { Injectable } from "@nestjs/common"
 import { eq } from "drizzle-orm"
-import { ParseDates } from "@/utils/parse-dates"
 
+@Injectable()
 export class UsersRepository
     extends DefaultDrizzlePgRepository<typeof user, User, InsertUser>
     implements IUsersRepository
@@ -13,7 +14,6 @@ export class UsersRepository
         super(user, drizzleService)
     }
 
-    @ParseDates
     public async findByEmail(email: string): Promise<User | null> {
         const [found] = await this.drizzleService.database
             .select()
@@ -21,6 +21,16 @@ export class UsersRepository
             .where(eq(user.email, email))
             .limit(1)
 
-        return (found as unknown as User) || null
+        return found || null
+    }
+
+    public async findByName(name: string): Promise<User | null> {
+        const [found] = await this.drizzleService.database
+            .select()
+            .from(user)
+            .where(eq(user.name, name))
+            .limit(1)
+
+        return found || null
     }
 }

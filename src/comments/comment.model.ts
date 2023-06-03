@@ -2,7 +2,6 @@ import { InferModel } from "drizzle-orm"
 import { index, pgTable, text, timestamp, varchar } from "drizzle-orm/pg-core"
 import { article } from "@/articles/article.model"
 import { user } from "@/users/users.model"
-import { ParsedDates, ParsedDatesInsert } from "@/utils/parse-dates"
 
 export const comment = pgTable(
     "comment",
@@ -34,7 +33,5 @@ export const comment = pgTable(
     }),
 )
 
-export type Comment = ParsedDates<InferModel<typeof comment, "select">>
-export type InsertComment = ParsedDatesInsert<
-    InferModel<typeof comment, "insert">
->
+export type Comment = InferModel<typeof comment, "select">
+export type InsertComment = InferModel<typeof comment, "insert">

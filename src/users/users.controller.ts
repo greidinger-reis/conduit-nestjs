@@ -1,23 +1,95 @@
-import { Body, Controller, Get, Post, Req } from "@nestjs/common"
+import { AuthGuard, AuthedRequest } from "@/auth/auth.guard"
+import {
+    Body,
+    Controller,
+    Get,
+    HttpException,
+    HttpStatus,
+    Post,
+    Put,
+    Req,
+    UseGuards,
+} from "@nestjs/common"
+import {
+    EmailAlreadyInUseException,
+    InvalidCredentialsException,
+    UserNameAlreadyExistsException,
+} from "./users.exceptions"
+import { CreateUserDTO, UpdateUserDTO } from "./users.model"
 import { UsersService } from "./users.service"
-import { Request } from "express"
-import { errors } from "jose"
-import { InsertUser } from "./users.model"
 
 @Controller("users")
 export class UsersController {
     constructor(private readonly usersService: UsersService) {}
 
+    @Post("login")
+    public async loginUser(
+        @Body()
+        body: {
+            user: Omit<CreateUserDTO, "name">
+        },
+    ) {
+        try {
+            const user = await this.usersService.loginUser(body.user)
+            return { user }
+        } catch (error) {
+            if (error instanceof InvalidCredentialsException) {
+                throw new HttpException(
+                    {
+                        status: HttpStatus.UNAUTHORIZED,
+                        error: error.message,
+                    },
+                    HttpStatus.UNAUTHORIZED,
+                )
+            }
+
+            throw new HttpException(
+                {
+                    status: HttpStatus.INTERNAL_SERVER_ERROR,
+                    error: (error as Error).message,
+                },
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            )
+        }
+    }
+
     @Post()
     public async registerUser(
         @Body()
-        body: Omit<InsertUser, "id" | "bio" | "image" | "emailVerified">,
+        body: {
+            user: CreateUserDTO
+        },
     ) {
         try {
-            return await this.usersService.registerUser(body)
+            const user = await this.usersService.registerUser(body.user)
+            return { user }
         } catch (error) {
-            console.dir(error)
-            return (error as Error).message
+            if (error instanceof UserNameAlreadyExistsException) {
+                throw new HttpException(
+                    {
+                        status: HttpStatus.CONFLICT,
+                        error: error.message,
+                    },
+                    HttpStatus.CONFLICT,
+                )
+            }
+            if (error instanceof EmailAlreadyInUseException) {
+                throw new HttpException(
+                    {
+                        status: HttpStatus.CONFLICT,
+                        error: error.message,
+                    },
+                    HttpStatus.CONFLICT,
+                )
+            }
+
+            throw new HttpException(
+                {
+                    status: HttpStatus.INTERNAL_SERVER_ERROR,
+                    error: (error as Error).message,
+                },
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            )
         }
     }
 }
@@ -26,20 +98,48 @@ export class UsersController {
 export class UserController {
     constructor(private readonly usersService: UsersService) {}
 
+    @UseGuards(AuthGuard)
     @Get()
-    public async getCurrentUser(@Req() req: Request) {
-        const token = req.headers.authorization?.split(" ")[1]
-        if (!token) throw new Error("No token provided")
+    public async getCurrentUser(@Req() req: AuthedRequest) {
         try {
-            return await this.usersService.getCurrentUser(token)
+            const user = await this.usersService.getCurrentUser(req.token)
+
+            return { user }
         } catch (error) {
-            if (error instanceof errors.JWTExpired) {
-                return "Expired token"
-            } else if (error instanceof errors.JWSSignatureVerificationFailed) {
-                return "Invalid token"
-            } else {
-                throw error
-            }
+            throw new HttpException(
+                {
+                    status: HttpStatus.NOT_FOUND,
+                    error: (error as Error).message,
+                },
+                HttpStatus.NOT_FOUND,
+            )
+        }
+    }
+
+    @UseGuards(AuthGuard)
+    @Put()
+    public async updateCurrentUser(
+        @Req() req: AuthedRequest,
+        @Body()
+        body: {
+            user: UpdateUserDTO
+        },
+    ) {
+        try {
+            const user = await this.usersService.updateUser(
+                req.token,
+                body.user,
+            )
+
+            return { user }
+        } catch (error) {
+            throw new HttpException(
+                {
+                    status: HttpStatus.NOT_FOUND,
+                    error: (error as Error).message,
+                },
+                HttpStatus.NOT_FOUND,
+            )
         }
     }
 }

@@ -1,15 +1,13 @@
 import { InferModel, eq } from "drizzle-orm"
 import { AnyPgTable } from "drizzle-orm/pg-core"
 import { createId } from "@/utils/create-id"
-import { ParsedDates, ParsedDatesInsert } from "@/utils/parse-dates"
 import { Repository } from "."
 import { DrizzleService } from "@/drizzle/drizzle.service"
 
 export abstract class DefaultDrizzlePgRepository<
     T extends AnyPgTable,
-    //@ts-expect-error Drizzle-orm is not generic
-    U extends ParsedDates<InferModel<T, "select">>,
-    V extends ParsedDatesInsert<InferModel<T, "insert">>,
+    U extends InferModel<T, "select">,
+    V extends InferModel<T, "insert">,
     //TODO: fix this type
     //@ts-expect-error Little type mismatch here. V is Partial<U> but InferModel<T, "insert"> is not completely Partial of T.
 > extends Repository<U, V> {
@@ -37,7 +35,7 @@ export abstract class DefaultDrizzlePgRepository<
     /**
      * @throws Error
      */
-    async update(id: string, data: Omit<V, "id">): Promise<U> {
+    async update(id: string, data: Partial<Omit<V, "id">>): Promise<U> {
         //@ts-expect-error wtf
         const [updated] = await this.drizzleService.database
             .update(this.table)

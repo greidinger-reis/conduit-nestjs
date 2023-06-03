@@ -1,7 +1,6 @@
 import { InferModel } from "drizzle-orm"
 import { index, pgTable, timestamp, varchar } from "drizzle-orm/pg-core"
 import { article } from "@/articles/article.model"
-import { ParsedDates, ParsedDatesInsert } from "@/utils/parse-dates"
 
 export const tag = pgTable(
     "tag",
@@ -22,8 +21,8 @@ export const tag = pgTable(
     },
     (tag) => ({
         articleIdIndex: index("tags__article_id__idx").on(tag.articleId),
-    })
+    }),
 )
 
-export type Tag = ParsedDates<InferModel<typeof tag>>
-export type InsertTag = ParsedDatesInsert<InferModel<typeof tag, "insert">>
+export type Tag = InferModel<typeof tag>
+export type InsertTag = InferModel<typeof tag, "insert">

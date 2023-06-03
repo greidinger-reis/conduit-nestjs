@@ -23,21 +23,21 @@ export abstract class Repository<T, U extends Partial<T>>
     abstract create(data: U): Promise<T>
 }
 
-// This is the interfaces for the controllers
-export interface ArticleRepository
+export interface IArticleRepository
     extends BaseRepository<Article, InsertArticle> {}
 
-export interface UsersRepository extends BaseRepository<User, InsertUser> {
+export interface IUsersRepository extends BaseRepository<User, InsertUser> {
     findByEmail(email: string): Promise<User | null>
+    findByName(name: string): Promise<User | null>
 }
 
-export interface CommentRepository
+export interface ICommentRepository
     extends BaseRepository<Comment, InsertComment> {}
 
-export interface FavoriteRepository
+export interface IFavoriteRepository
     extends BaseRepository<Favorite, InsertFavorite> {}
 
-export interface FollowRepository
+export interface IFollowRepository
     extends BaseRepository<Follow, InsertFollow> {}
 
-export interface TagRepository extends BaseRepository<Tag, InsertTag> {}
+export interface ITagRepository extends BaseRepository<Tag, InsertTag> {}

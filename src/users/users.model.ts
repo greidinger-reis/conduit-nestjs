@@ -1,6 +1,5 @@
 import { InferModel } from "drizzle-orm"
 import { pgTable, text, timestamp, varchar } from "drizzle-orm/pg-core"
-import { ParsedDates, ParsedDatesInsert } from "@/utils/parse-dates"
 
 export const user = pgTable("user", {
     id: varchar("id", { length: 256 }).notNull().primaryKey(),
@@ -18,5 +17,22 @@ export const user = pgTable("user", {
         .defaultNow(),
 })
 
-export type User = ParsedDates<InferModel<typeof user>>
-export type InsertUser = ParsedDatesInsert<InferModel<typeof user, "insert">>
+export type User = InferModel<typeof user>
+export type InsertUser = InferModel<typeof user, "insert">
+
+export type CreateUserDTO = Omit<
+    InsertUser,
+    "id" | "bio" | "image" | "emailVerified" | "createdAt" | "updatedAt"
+>
+
+export type UpdateUserDTO = Partial<
+    Omit<InsertUser, "id" | "emailVerified" | "createdAt" | "updatedAt">
+>
+
+export type UserDTO = Omit<
+    User,
+    "id" | "password" | "emailVerified" | "createdAt" | "updatedAt"
+> & {
+    token: string
+}
+

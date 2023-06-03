@@ -1,8 +1,7 @@
-import { InferModel } from "drizzle-orm"
-import { index, pgTable, timestamp, varchar } from "drizzle-orm/pg-core"
 import { article } from "@/articles/article.model"
 import { user } from "@/users/users.model"
-import { ParsedDates, ParsedDatesInsert } from "@/utils/parse-dates"
+import { InferModel } from "drizzle-orm"
+import { index, pgTable, timestamp, varchar } from "drizzle-orm/pg-core"
 
 export const favorite = pgTable(
     "favorite",
@@ -28,12 +27,10 @@ export const favorite = pgTable(
     (favorite) => ({
         userIdIndex: index("favorites__user_id__idx").on(favorite.userId),
         articleIdIndex: index("favorites__article_id__idx").on(
-            favorite.articleId
+            favorite.articleId,
         ),
-    })
+    }),
 )
 
-export type Favorite = ParsedDates<InferModel<typeof favorite, "select">>
-export type InsertFavorite = ParsedDatesInsert<
-    InferModel<typeof favorite, "insert">
->
+export type Favorite = InferModel<typeof favorite, "select">
+export type InsertFavorite = InferModel<typeof favorite, "insert">
