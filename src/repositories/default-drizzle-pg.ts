@@ -1,7 +1,7 @@
 import { InferModel, eq } from "drizzle-orm"
 import { AnyPgTable } from "drizzle-orm/pg-core"
 import { createId } from "@/utils/create-id"
-import { ParsedDates, ParsedDatesInsert } from "@/utils/parsed-dates"
+import { ParsedDates, ParsedDatesInsert } from "@/utils/parse-dates"
 import { Repository } from "."
 import { DrizzleService } from "@/drizzle/drizzle.service"
 
@@ -13,7 +13,7 @@ export abstract class DefaultDrizzlePgRepository<
     //TODO: fix this type
     //@ts-expect-error Little type mismatch here. V is Partial<U> but InferModel<T, "insert"> is not completely Partial of T.
 > extends Repository<U, V> {
-    constructor(protected table: T, private drizzleService: DrizzleService) {
+    constructor(protected table: T, protected drizzleService: DrizzleService) {
         super()
     }
 

@@ -1,5 +1,5 @@
-import { Comment, InsertComment, comment } from "@/models/comment"
-import { DefaultDrizzlePgRepository } from "./default-drizzle-pg"
+import { Comment, InsertComment, comment } from "@/comments/comment.model"
+import { DefaultDrizzlePgRepository } from "@/repositories/default-drizzle-pg"
 import { DrizzleService } from "@/drizzle/drizzle.service"
 
 export class CommentRepository extends DefaultDrizzlePgRepository<
@@ -8,6 +8,6 @@ export class CommentRepository extends DefaultDrizzlePgRepository<
     InsertComment
 > {
     constructor(drizzleService: DrizzleService) {
-        super(comment,drizzleService)
+        super(comment, drizzleService)
     }
 }

@@ -1,9 +1,9 @@
-import { Article, InsertArticle } from "@/models/article"
-import { Comment, InsertComment } from "@/models/comment"
-import { Favorite, InsertFavorite } from "@/models/favorite"
-import { Follow, InsertFollow } from "@/models/follow"
-import { InsertTag, Tag } from "@/models/tag"
-import { InsertUser, User } from "@/models/user"
+import { Article, InsertArticle } from "@/articles/article.model"
+import { Comment, InsertComment } from "@/comments/comment.model"
+import { Favorite, InsertFavorite } from "@/favorites/favorite.model"
+import { Follow, InsertFollow } from "@/follows/follow.model"
+import { InsertTag, Tag } from "@/tags/tag.model"
+import { InsertUser, User } from "@/users/users.model"
 
 export interface BaseRepository<T, U extends Partial<T>> {
     create(data: U): Promise<T>
@@ -26,13 +26,18 @@ export abstract class Repository<T, U extends Partial<T>>
 // This is the interfaces for the controllers
 export interface ArticleRepository
     extends BaseRepository<Article, InsertArticle> {}
-export interface UserRepository 
-    extends BaseRepository<User, InsertUser> {}
+
+export interface UsersRepository extends BaseRepository<User, InsertUser> {
+    findByEmail(email: string): Promise<User | null>
+}
+
 export interface CommentRepository
     extends BaseRepository<Comment, InsertComment> {}
+
 export interface FavoriteRepository
     extends BaseRepository<Favorite, InsertFavorite> {}
+
 export interface FollowRepository
     extends BaseRepository<Follow, InsertFollow> {}
-export interface TagRepository 
-    extends BaseRepository<Tag, InsertTag> {}
+
+export interface TagRepository extends BaseRepository<Tag, InsertTag> {}

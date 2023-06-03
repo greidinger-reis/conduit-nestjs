@@ -1,5 +1,5 @@
-import { Article, InsertArticle, article } from "@/models/article"
-import {DefaultDrizzlePgRepository} from "./default-drizzle-pg"
+import { Article, InsertArticle, article } from "@/articles/article.model"
+import { DefaultDrizzlePgRepository } from "@/repositories/default-drizzle-pg"
 import { DrizzleService } from "@/drizzle/drizzle.service"
 
 export class ArticleRepository extends DefaultDrizzlePgRepository<

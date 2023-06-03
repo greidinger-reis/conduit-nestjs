@@ -1,7 +1,7 @@
 import { InferModel } from "drizzle-orm"
 import { index, pgTable, text, timestamp, varchar } from "drizzle-orm/pg-core"
-import { user } from "./user"
-import { ParsedDates, ParsedDatesInsert } from "@/utils/parsed-dates"
+import { user } from "@/users/users.model"
+import { ParsedDates, ParsedDatesInsert } from "@/utils/parse-dates"
 
 export const article = pgTable(
     "article",
