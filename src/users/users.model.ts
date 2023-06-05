@@ -9,10 +9,10 @@ export const user = pgTable("user", {
     emailVerified: timestamp("emailVerified"),
     bio: text("bio"),
     image: varchar("image", { length: 256 }),
-    createdAt: timestamp("created_at", { mode: "string" })
+    createdAt: timestamp("created_at", { mode: "date" })
         .notNull()
         .defaultNow(),
-    updatedAt: timestamp("updated_at", { mode: "string" })
+    updatedAt: timestamp("updated_at", { mode: "date" })
         .notNull()
         .defaultNow(),
 })
@@ -20,19 +20,40 @@ export const user = pgTable("user", {
 export type User = InferModel<typeof user>
 export type InsertUser = InferModel<typeof user, "insert">
 
-export type CreateUserDTO = Omit<
-    InsertUser,
-    "id" | "bio" | "image" | "emailVerified" | "createdAt" | "updatedAt"
->
+export interface RegisterUserDTO {
+    /**
+     * @pattern ^[a-zA-Z0-9]+$
+     * @minLength 3
+     * @maxLength 16
+     * */
+    name: InsertUser["name"]
 
-export type UpdateUserDTO = Partial<
-    Omit<InsertUser, "id" | "emailVerified" | "createdAt" | "updatedAt">
->
+    /**
+     * @format email
+     */
+    email: InsertUser["email"]
 
-export type UserDTO = Omit<
-    User,
-    "id" | "password" | "emailVerified" | "createdAt" | "updatedAt"
-> & {
-    token: string
+    /**
+     * @pattern ^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()\-_=+{};:,<.>]).+$
+     * @minLength 8
+     */
+    password: InsertUser["password"]
 }
 
+export interface LoginUserDTO extends Pick<InsertUser, "email" | "password"> {}
+
+export interface UpdateUserDTO extends RegisterUserDTO {
+    /**
+     * @maxLength 1024
+     */
+    bio?: InsertUser["bio"]
+    /**
+     * @maxLength 256
+     */
+    image?: InsertUser["image"]
+}
+
+export interface UserDTO
+    extends Pick<User, "name" | "email" | "image" | "bio"> {
+    token: string
+}

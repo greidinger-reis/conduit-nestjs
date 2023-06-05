@@ -1,4 +1,5 @@
-import { Article, InsertArticle } from "@/articles/article.model"
+import { Article, ArticleDTO, InsertArticle } from "@/articles/article.model"
+import { IArticleQuery } from "@/articles/article.query"
 import { Comment, InsertComment } from "@/comments/comment.model"
 import { Favorite, InsertFavorite } from "@/favorites/favorite.model"
 import { Follow, InsertFollow } from "@/follows/follow.model"
@@ -9,7 +10,7 @@ export interface BaseRepository<T, U extends Partial<T>> {
     create(data: U): Promise<T>
     update(id: string, data: U): Promise<T>
     delete(id: string): Promise<T>
-    findAll(limit: number, offset: number): Promise<T[]>
+    findAll(): Promise<T[]>
     findById(id: string): Promise<T | null>
 }
 
@@ -18,13 +19,21 @@ export abstract class Repository<T, U extends Partial<T>>
 {
     abstract update(id: string, data: U): Promise<T>
     abstract delete(id: string): Promise<T>
-    abstract findAll(limit: number, offset: number): Promise<T[]>
+    abstract findAll(): Promise<T[]>
     abstract findById(id: string): Promise<T | null>
     abstract create(data: U): Promise<T>
 }
 
+// @ts-ignore
 export interface IArticleRepository
-    extends BaseRepository<Article, InsertArticle> {}
+    extends BaseRepository<Article, InsertArticle> {
+    findBySlug(slug: string, currentUserId: string): Promise<ArticleDTO | null>
+    findAll(
+        query: IArticleQuery,
+        currentUserId: string,
+        type: "global" | "feed",
+    ): Promise<ArticleDTO[]>
+}
 
 export interface IUsersRepository extends BaseRepository<User, InsertUser> {
     findByEmail(email: string): Promise<User | null>

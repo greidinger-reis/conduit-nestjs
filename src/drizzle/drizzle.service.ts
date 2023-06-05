@@ -12,6 +12,6 @@ export class DrizzleService {
     })
 
     public database = drizzle(this.queryClient, {
-        logger: this.configService.get<boolean>("DRIZZLE_LOGGING"),
+        logger: true
     })
 }

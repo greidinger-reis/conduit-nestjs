@@ -18,10 +18,10 @@ export const comment = pgTable(
                 onDelete: "cascade",
             }),
         body: text("body").notNull(),
-        createdAt: timestamp("created_at", { mode: "string" })
+        createdAt: timestamp("created_at", { mode: "date" })
             .notNull()
             .defaultNow(),
-        updatedAt: timestamp("updated_at", { mode: "string" })
+        updatedAt: timestamp("updated_at", { mode: "date" })
             .notNull()
             .defaultNow(),
     },

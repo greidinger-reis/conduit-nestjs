@@ -1,18 +1,17 @@
 import { AuthService } from "@/auth/auth.service"
-import { UsersRepository } from "./users.repository"
-import {
-    CreateUserDTO,
-    InsertUser,
-    UpdateUserDTO,
-    User,
-    UserDTO,
-} from "./users.model"
 import { Injectable } from "@nestjs/common"
 import {
     EmailAlreadyInUseException,
     InvalidCredentialsException,
     UserNameAlreadyExistsException,
 } from "./users.exceptions"
+import {
+    LoginUserDTO,
+    RegisterUserDTO,
+    UpdateUserDTO,
+    UserDTO,
+} from "./users.model"
+import { UsersRepository } from "./users.repository"
 
 @Injectable()
 export class UsersService {
@@ -36,7 +35,7 @@ export class UsersService {
         }
     }
 
-    public async registerUser(user: CreateUserDTO): Promise<UserDTO> {
+    public async registerUser(user: RegisterUserDTO): Promise<UserDTO> {
         const foundEmail = await this.usersRepository.findByEmail(user.email)
         if (foundEmail) throw new EmailAlreadyInUseException()
 
@@ -62,9 +61,7 @@ export class UsersService {
         }
     }
 
-    public async loginUser(
-        user: Omit<CreateUserDTO, "name">,
-    ): Promise<UserDTO> {
+    public async loginUser(user: Omit<LoginUserDTO, "name">): Promise<UserDTO> {
         const found = await this.usersRepository.findByEmail(user.email)
 
         if (!found) {

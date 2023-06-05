@@ -49,12 +49,10 @@ export abstract class DefaultDrizzlePgRepository<
         return updated as U
     }
 
-    async findAll(limit: number, offset: number): Promise<U[]> {
+    async findAll(): Promise<U[]> {
         return (await this.drizzleService.database
             .select()
-            .from(this.table)
-            .limit(limit)
-            .offset(offset)) as unknown as U[]
+            .from(this.table)) as unknown as U[]
     }
 
     async findById(id: string): Promise<U | null> {

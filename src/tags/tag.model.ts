@@ -12,10 +12,10 @@ export const tag = pgTable(
             .references(() => article.id, {
                 onDelete: "cascade",
             }),
-        createdAt: timestamp("created_at", { mode: "string" })
+        createdAt: timestamp("created_at", { mode: "date" })
             .notNull()
             .defaultNow(),
-        updatedAt: timestamp("updated_at", { mode: "string" })
+        updatedAt: timestamp("updated_at", { mode: "date" })
             .notNull()
             .defaultNow(),
     },

@@ -1,4 +1,4 @@
-import { user } from "@/users/users.model"
+import { User, user } from "@/users/users.model"
 import { InferModel } from "drizzle-orm"
 import { index, pgTable, text, timestamp, varchar } from "drizzle-orm/pg-core"
 
@@ -14,10 +14,10 @@ export const article = pgTable(
         title: varchar("title", { length: 256 }).notNull(),
         description: text("description").notNull(),
         body: text("body").notNull(),
-        createdAt: timestamp("created_at", { mode: "string" })
+        createdAt: timestamp("created_at", { mode: "date" })
             .notNull()
             .defaultNow(),
-        updatedAt: timestamp("updated_at", { mode: "string" })
+        updatedAt: timestamp("updated_at", { mode: "date" })
             .notNull()
             .defaultNow(),
     },
@@ -28,3 +28,14 @@ export const article = pgTable(
 
 export type Article = InferModel<typeof article, "select">
 export type InsertArticle = InferModel<typeof article, "insert">
+
+export interface ArticleDTO
+    extends Pick<
+        Article,
+        "title" | "description" | "slug" | "body" | "createdAt" | "updatedAt"
+    > {
+    author: Pick<User, "name" | "bio" | "image"> & { following: boolean }
+    favorited: boolean
+    favoritesCount: number
+    tagList: string[]
+}

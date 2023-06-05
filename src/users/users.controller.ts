@@ -1,12 +1,8 @@
 import { AuthGuard, AuthedRequest } from "@/auth/auth.guard"
 import {
-    Body,
     Controller,
-    Get,
     HttpException,
     HttpStatus,
-    Post,
-    Put,
     Req,
     UseGuards,
 } from "@nestjs/common"
@@ -15,23 +11,26 @@ import {
     InvalidCredentialsException,
     UserNameAlreadyExistsException,
 } from "./users.exceptions"
-import { CreateUserDTO, UpdateUserDTO } from "./users.model"
+import { RegisterUserDTO, LoginUserDTO, UpdateUserDTO } from "./users.model"
 import { UsersService } from "./users.service"
+import { TypedBody, TypedRoute } from "@nestia/core"
 
 @Controller("users")
 export class UsersController {
     constructor(private readonly usersService: UsersService) {}
 
-    @Post("login")
+    @TypedRoute.Post("login")
     public async loginUser(
-        @Body()
+        @TypedBody()
         body: {
-            user: Omit<CreateUserDTO, "name">
+            user: LoginUserDTO
         },
     ) {
         try {
             const user = await this.usersService.loginUser(body.user)
-            return { user }
+
+            //for some unknown reason if I return just {user} it will return an empty object
+            return { user:user }
         } catch (error) {
             if (error instanceof InvalidCredentialsException) {
                 throw new HttpException(
@@ -53,16 +52,18 @@ export class UsersController {
         }
     }
 
-    @Post()
+    @TypedRoute.Post()
     public async registerUser(
-        @Body()
+        @TypedBody()
         body: {
-            user: CreateUserDTO
+            user: RegisterUserDTO
         },
     ) {
         try {
             const user = await this.usersService.registerUser(body.user)
-            return { user }
+
+            //for some unknown reason if I return just {user} it will return an empty object
+            return { user: user }
         } catch (error) {
             if (error instanceof UserNameAlreadyExistsException) {
                 throw new HttpException(
@@ -99,12 +100,13 @@ export class UserController {
     constructor(private readonly usersService: UsersService) {}
 
     @UseGuards(AuthGuard)
-    @Get()
+    @TypedRoute.Get()
     public async getCurrentUser(@Req() req: AuthedRequest) {
         try {
             const user = await this.usersService.getCurrentUser(req.token)
 
-            return { user }
+            //for some unknown reason if I return just {user} it will return an empty object
+            return { user: user }
         } catch (error) {
             throw new HttpException(
                 {
@@ -117,10 +119,10 @@ export class UserController {
     }
 
     @UseGuards(AuthGuard)
-    @Put()
+    @TypedRoute.Put()
     public async updateCurrentUser(
         @Req() req: AuthedRequest,
-        @Body()
+        @TypedBody()
         body: {
             user: UpdateUserDTO
         },
