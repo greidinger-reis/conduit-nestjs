@@ -39,3 +39,17 @@ export interface ArticleDTO
     favoritesCount: number
     tagList: string[]
 }
+
+export interface CreateArticleDTO
+    extends Pick<InsertArticle, "description" | "body"> {
+    /**
+     * @minLength 3
+     * @maxLength 256
+     * */
+    title: string
+
+    /**
+     * @maxItems 5
+     */
+    tagList?: string[]
+}

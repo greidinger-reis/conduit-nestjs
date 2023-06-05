@@ -164,11 +164,20 @@ export class ArticleRepository
     public async findBySlug(
         slug: string,
         currentUserId = "",
-    ): Promise<ArticleDTO> {
+    ): Promise<ArticleDTO | null> {
         const [article] = await this.singleArticleQuery.execute({
             slug,
             currentUserId,
         })
-        return article as ArticleDTO
+        return (article as ArticleDTO) ?? null
+    }
+
+    public async getArticleIdBySlug(slug: string): Promise<string | null> {
+        const [{ id }] = await this.drizzleService.database
+            .select({ id: article.id })
+            .from(article)
+            .where(eq(article.slug, slug))
+            .limit(1)
+        return id ?? null
     }
 }

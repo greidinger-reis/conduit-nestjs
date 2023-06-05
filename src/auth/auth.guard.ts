@@ -6,9 +6,12 @@ import {
 } from "@nestjs/common"
 import { AuthService } from "./auth.service"
 import { Request } from "express"
+import { UserTokenDTO } from "@/users/users.model"
 
-export type AuthedRequest = Request & { token: string }
-export type OptionalAuthedRequest = Request & { token?: string }
+export type AuthedRequest = Request & { user: UserTokenDTO }
+export type OptionalAuthedRequest = Request & {
+    user?: { id: string; token: string }
+}
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -19,11 +22,11 @@ export class AuthGuard implements CanActivate {
         const token = this.extractFromHeader(req)
         if (!token) throw new UnauthorizedException()
 
-        void (await this.authService.decodeToken(token).catch(() => {
+        const { sub } = await this.authService.decodeToken(token).catch(() => {
             throw new UnauthorizedException()
-        }))
+        })
 
-        req.token = token
+        req.user = { id: sub, token }
 
         return true
     }
@@ -36,14 +39,20 @@ export class AuthGuard implements CanActivate {
 
 @Injectable()
 export class OptionalAuthGuard implements CanActivate {
+    constructor(private readonly authService: AuthService) {}
+
     async canActivate(ctx: ExecutionContext): Promise<boolean> {
         const req = ctx.switchToHttp().getRequest<AuthedRequest>()
         const token = this.extractFromHeader(req)
+
         if (!token) return true
 
-        req.token = token
-
-        return true
+        try {
+            const { sub } = await this.authService.decodeToken(token)
+            req.user = { id: sub, token }
+        } finally {
+            return true
+        }
     }
 
     private extractFromHeader(req: Request): string | null {

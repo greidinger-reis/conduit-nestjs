@@ -9,12 +9,8 @@ export const user = pgTable("user", {
     emailVerified: timestamp("emailVerified"),
     bio: text("bio"),
     image: varchar("image", { length: 256 }),
-    createdAt: timestamp("created_at", { mode: "date" })
-        .notNull()
-        .defaultNow(),
-    updatedAt: timestamp("updated_at", { mode: "date" })
-        .notNull()
-        .defaultNow(),
+    createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow(),
 })
 
 export type User = InferModel<typeof user>
@@ -55,5 +51,10 @@ export interface UpdateUserDTO extends RegisterUserDTO {
 
 export interface UserDTO
     extends Pick<User, "name" | "email" | "image" | "bio"> {
+    token: string
+}
+
+export interface UserTokenDTO {
+    id: string
     token: string
 }

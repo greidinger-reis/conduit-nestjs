@@ -49,4 +49,6 @@ export interface IFavoriteRepository
 export interface IFollowRepository
     extends BaseRepository<Follow, InsertFollow> {}
 
-export interface ITagRepository extends BaseRepository<Tag, InsertTag> {}
+export interface ITagRepository extends BaseRepository<Tag, InsertTag> {
+    findAllByArticleId(articleId: string): Promise<Tag[]>
+}

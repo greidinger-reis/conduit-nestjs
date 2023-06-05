@@ -103,7 +103,7 @@ export class UserController {
     @TypedRoute.Get()
     public async getCurrentUser(@Req() req: AuthedRequest) {
         try {
-            const user = await this.usersService.getCurrentUser(req.token)
+            const user = await this.usersService.getCurrentUser(req.user)
 
             //for some unknown reason if I return just {user} it will return an empty object
             return { user: user }
@@ -129,7 +129,7 @@ export class UserController {
     ) {
         try {
             const user = await this.usersService.updateUser(
-                req.token,
+                req.user,
                 body.user,
             )
 

@@ -5,6 +5,7 @@ import { DrizzleService } from "@/drizzle/drizzle.service"
 import { ArticleRepository } from "./article.repository"
 import { UsersRepository } from "@/users/users.repository"
 import { AuthService } from "@/auth/auth.service"
+import { TagRepository } from "@/tags/tag.repository"
 
 @Module({
     controllers: [ArticleController],
@@ -13,6 +14,7 @@ import { AuthService } from "@/auth/auth.service"
         AuthService,
         ArticleRepository,
         UsersRepository,
+        TagRepository,
         ArticleService,
     ],
 })

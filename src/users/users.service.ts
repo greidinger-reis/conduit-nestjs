@@ -10,6 +10,7 @@ import {
     RegisterUserDTO,
     UpdateUserDTO,
     UserDTO,
+    UserTokenDTO,
 } from "./users.model"
 import { UsersRepository } from "./users.repository"
 
@@ -20,18 +21,19 @@ export class UsersService {
         private readonly authService: AuthService,
     ) {}
 
-    public async getCurrentUser(token: string): Promise<UserDTO> {
-        const { sub } = await this.authService.decodeToken(token)
-        const found = await this.usersRepository.findById(sub)
-
-        if (!found) throw new Error("User not found")
+    public async getCurrentUser(user: {
+        token: string
+        id: string
+    }): Promise<UserDTO | null> {
+        const found = await this.usersRepository.findById(user.id)
+        if (!found) return null
 
         return {
-            name: found.name,
             email: found.email,
+            name: found.name,
             bio: found.bio,
             image: found.image,
-            token,
+            token: user.token,
         }
     }
 
@@ -87,11 +89,10 @@ export class UsersService {
     }
 
     public async updateUser(
-        token: string,
+        currentUser: UserTokenDTO,
         user: UpdateUserDTO,
     ): Promise<UserDTO> {
-        const { sub } = await this.authService.decodeToken(token)
-        const found = await this.usersRepository.findById(sub)
+        const found = await this.usersRepository.findById(currentUser.id)
 
         if (!found) throw new Error("User not found")
 
@@ -111,14 +112,17 @@ export class UsersService {
             }
         }
 
-        const updatedUser = await this.usersRepository.update(sub, user)
+        const updatedUser = await this.usersRepository.update(
+            currentUser.id,
+            user,
+        )
 
         return {
             name: updatedUser.name,
             email: updatedUser.email,
             bio: updatedUser.bio,
             image: updatedUser.image,
-            token,
+            token: currentUser.token,
         }
     }
 }
