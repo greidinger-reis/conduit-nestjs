@@ -1,38 +1,39 @@
 {
-  "compilerOptions": {
-    "module": "CommonJS",
-    "declaration": true,
-    "removeComments": true,
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
-    "allowSyntheticDefaultImports": true,
-    "target": "es2017",
-    "sourceMap": true,
-    "outDir": "./dist",
-    "baseUrl": "./",
-    "incremental": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "strictBindCallApply": false,
-    "forceConsistentCasingInFileNames": true,
-    "noFallthroughCasesInSwitch": false,
-    "paths": {
-      "@/*": [
-        "src/*"
-      ]
-    },
-    "plugins": [
-      {
-        "transform": "@nestia/core/lib/transform",
-        /**
+    "compilerOptions": {
+        "strictPropertyInitialization": false,
+        "module": "CommonJS",
+        "declaration": true,
+        "removeComments": true,
+        "emitDecoratorMetadata": true,
+        "experimentalDecorators": true,
+        "allowSyntheticDefaultImports": true,
+        "target": "es2017",
+        "sourceMap": true,
+        "outDir": "./dist",
+        "baseUrl": "./",
+        "incremental": true,
+        "skipLibCheck": true,
+        "strict": true,
+        "strictBindCallApply": false,
+        "forceConsistentCasingInFileNames": true,
+        "noFallthroughCasesInSwitch": false,
+        "paths": {
+            "@/*": [
+                "src/*"
+            ]
+        },
+        "plugins": [
+            {
+                "transform": "@nestia/core/lib/transform",
+                /**
          * Validate request body.
          * 
          *   - "assert": Use typia.assert() function
          *   - "is": Use typia.is() function
          *   - "validate": Use typia.validate() function
          */
-        "validate": "assert",
-        /**
+                "validate": "assert",
+                /**
          * Validate JSON typed response body.
          * 
          *   - "assert": Use typia.assertStringify() function
@@ -41,12 +42,12 @@
          *   - "stringify": Use typia.stringify() function, but dangerous
          *   - null: Just use JSON.stringify() function, without boosting
          */
-        "stringify": "assert"
-      },
-      {
-        "transform": "typia/lib/transform"
-      }
-    ],
-    "strictNullChecks": true
-  }
+                "stringify": "assert"
+            },
+            {
+                "transform": "typia/lib/transform"
+            }
+        ],
+        "strictNullChecks": true
+    }
 }

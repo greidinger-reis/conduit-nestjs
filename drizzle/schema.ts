@@ -1,6 +1,0 @@
-export { tag } from "@/tags/tag.model"
-export { user } from "@/users/users.model"
-export { follow } from "@/follows/follow.model"
-export { article } from "@/articles/article.model"
-export { comment } from "@/comments/comment.model"
-export { favorite } from "@/favorites/favorite.model"
