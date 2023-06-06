@@ -7,9 +7,15 @@ import { ArticlesModule } from "./modules/articles/article.module"
 import { CommentEntity } from "./modules/comment/comment.entity"
 import { UserEntity } from "./modules/user/user.entity"
 import { UsersModule } from "./modules/user/user.module"
+import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler"
+import { APP_GUARD } from "@nestjs/core"
 
 @Module({
     imports: [
+        ThrottlerModule.forRoot({
+            ttl: 60,
+            limit: 10,
+        }),
         ConfigModule.forRoot({
             isGlobal: true,
             load: [defaultConfig],
@@ -34,6 +40,11 @@ import { UsersModule } from "./modules/user/user.module"
         ArticlesModule,
     ],
     controllers: [],
-    providers: [],
+    providers: [
+        {
+            provide: APP_GUARD,
+            useClass: ThrottlerGuard,
+        },
+    ],
 })
 export class AppModule {}
