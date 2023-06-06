@@ -18,9 +18,12 @@ import { UsersModule } from "./modules/user/user.module"
             imports: [ConfigModule],
             useFactory: (configService: ConfigService) => {
                 const databaseUrl =
-                    configService.getOrThrow<Config["DATABASE_URL"]>("DATABASE_URL")
+                    configService.getOrThrow<Config["DATABASE_URL"]>(
+                        "DATABASE_URL",
+                    )
                 return {
                     url: databaseUrl,
+                    type: "postgres",
                     entities: [UserEntity, ArticleEntity, CommentEntity],
                     synchronize: true,
                 }
