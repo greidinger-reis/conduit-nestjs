@@ -11,7 +11,7 @@ async function bootstrap() {
         new FastifyAdapter(),
     )
     app.setGlobalPrefix("api")
-    await app.listen(3000)
+    await app.listen(8080, "0.0.0.0")
+    console.log(`Listening on ${await app.getUrl()}`)
 }
-
 bootstrap()
