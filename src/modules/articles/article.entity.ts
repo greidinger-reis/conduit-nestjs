@@ -3,10 +3,12 @@ import { UserEntity } from "@/modules/user/user.entity"
 import {
     Column,
     Entity,
+    JoinColumn,
     JoinTable,
     ManyToMany,
     ManyToOne,
     OneToMany,
+    TableColumn,
 } from "typeorm"
 import { CommentEntity } from "../comment/comment.entity"
 import { IArticleEntity } from "./interfaces/entity"
@@ -26,14 +28,17 @@ export class ArticleEntity extends AbstractEntity implements IArticleEntity {
     body: string
 
     @Column({
-        array: true,
         name: "tag_list",
         type: "simple-array",
         nullable: true,
     })
     tagList: string[]
 
-    @ManyToOne(() => UserEntity, (author) => author.articles, { eager: true })
+    @ManyToOne(() => UserEntity, (author) => author.articles, {
+        eager: true,
+        onDelete: "CASCADE",
+    })
+    @JoinColumn({ name: "author_id" })
     //@ts-expect-error idk
     author: UserEntity
 

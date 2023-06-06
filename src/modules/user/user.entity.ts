@@ -70,15 +70,21 @@ export class UserEntity extends AbstractEntity implements IUserEntity {
         return this
     }
 
-    setImage(image?: string): UserEntity {
-        if (!image) return this
+    setImage(image?: string | null): UserEntity {
+        if (image === undefined) return this
+
+        //@ts-expect-error idk
         this.image = image
+
         return this
     }
 
-    setBio(bio?: string): UserEntity {
-        if (!bio) return this
+    setBio(bio?: string | null): UserEntity {
+        if (bio === undefined) return this
+
+        //@ts-expect-error idk
         this.bio = bio
+
         return this
     }
 }

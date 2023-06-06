@@ -1,14 +1,15 @@
 import { Injectable } from "@nestjs/common"
 import slugify from "slugify"
-import { UserRepository } from "../user/user.repository"
-import { IArticleSearchParams } from "./interfaces/search-params"
-import { ArticleRepository } from "./article.repository"
-import { ICreateArticleInput } from "./inputs/create"
 import { AuthedRequestPayload } from "../auth/interfaces/auth-payload"
+import { UserRepository } from "../user/user.repository"
 import { ArticleDTO } from "./article.dto"
 import { ArticleEntity } from "./article.entity"
-import { IUpdateArticleInput } from "./inputs/update"
+import { ArticleRepository } from "./article.repository"
 import { NotArticleAuthorException } from "./exceptions"
+import { ICreateArticleInput } from "./inputs/create"
+import { IUpdateArticleInput } from "./inputs/update"
+import { randomFillSync } from "node:crypto"
+import { IArticleSearchParams } from "./interfaces/search-params"
 
 @Injectable()
 export class ArticleService {
@@ -49,7 +50,7 @@ export class ArticleService {
         const existingArticle = await this.articleRepository.findOneBySlug(slug)
 
         if (existingArticle) {
-            slug = slug + "-" + Math.random().toString(36).slice(2, 8)
+            slug = slug + "-" + randomFillSync(Buffer.alloc(4)).toString("hex")
         }
 
         const author = await this.userRepository.findById(user.id)

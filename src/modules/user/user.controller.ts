@@ -27,7 +27,8 @@ export class UsersController {
         try {
             const user = await this.userService.loginUser(body)
 
-            return { user }
+            //I have no idea why I have to return {user:user} instead of just {user}
+            return { user: user }
         } catch (error) {
             if (error instanceof InvalidCredentialsException) {
                 throw new HttpException(
@@ -57,7 +58,8 @@ export class UsersController {
         try {
             const user = await this.userService.registerUser(body)
 
-            return { user }
+            //I have no idea why I have to return {user:user} instead of just {user}
+            return { user: user }
         } catch (error) {
             if (error instanceof UserNameAlreadyExistsException) {
                 throw new HttpException(
@@ -100,7 +102,7 @@ export class UserController {
             const user = await this.usersService.getCurrentUser(req.user)
 
             //for some unknown reason if I return just {user} it will return an empty object
-            return { user }
+            return { user: user }
         } catch (error) {
             throw new HttpException(
                 {
@@ -122,7 +124,7 @@ export class UserController {
         try {
             const user = await this.usersService.updateUser(req.user, body)
 
-            return { user }
+            return { user: user }
         } catch (error) {
             throw new HttpException(
                 {

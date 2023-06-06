@@ -32,8 +32,8 @@ export class ArticleDTO {
     @ApiProperty()
     author: {
         name: string
-        bio: string
-        image: string
+        bio: string | null
+        image: string | null
         following: boolean
     }
 
@@ -45,17 +45,19 @@ export class ArticleDTO {
         this.tagList = articleEntity.tagList
         this.createdAt = articleEntity.createdAt
         this.updatedAt = articleEntity.updatedAt
-        this.favorited = articleEntity.author.favorites.some(
-            (favorite) => favorite.id === articleEntity.id,
-        )
-        this.favoritesCount = articleEntity.favoritedBy.length
+        this.favorited =
+            articleEntity.author.favorites?.some(
+                (favorite) => favorite.id === articleEntity.id,
+            ) ?? false
+        this.favoritesCount = articleEntity.favoritedBy?.length ?? 0
         this.author = {
             name: articleEntity.author.name,
             bio: articleEntity.author.bio,
             image: articleEntity.author.image,
-            following: articleEntity.author.followers.some(
-                (follower) => follower.id === currentUserId,
-            ),
+            following:
+                articleEntity.author.followers?.some(
+                    (follower) => follower.id === currentUserId,
+                ) ?? false,
         }
     }
 }

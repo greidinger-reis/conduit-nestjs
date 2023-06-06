@@ -61,13 +61,9 @@ export class ArticleRepository
             })
         }
 
-        if (searchParams.limit) {
-            query.limit(searchParams.limit)
-        }
+        query.limit(searchParams.limit ?? 20)
 
-        if (searchParams.offset) {
-            query.offset(searchParams.offset)
-        }
+        query.offset(searchParams.offset ?? 0)
 
         return await query
             .getMany()

@@ -1,6 +1,5 @@
 import { AuthService } from "@/modules/auth/auth.service"
 import { Injectable } from "@nestjs/common"
-import { InjectRepository } from "@nestjs/typeorm"
 import { AuthedRequestPayload } from "../auth/interfaces/auth-payload"
 import {
     EmailAlreadyInUseException,
@@ -17,7 +16,6 @@ import { UserRepository } from "./user.repository"
 @Injectable()
 export class UserService {
     constructor(
-        @InjectRepository(UserEntity)
         private readonly userRepository: UserRepository,
         private readonly authService: AuthService,
     ) {}

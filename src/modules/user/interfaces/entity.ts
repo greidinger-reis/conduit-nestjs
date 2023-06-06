@@ -25,9 +25,9 @@ export interface IUserEntity extends IAbstractEntity {
     /**
      * @maxLength 255
      * */
-    image: string
+    image: string | null
 
-    bio: string
+    bio: string | null
 
     articles: IArticleEntity[]
 
