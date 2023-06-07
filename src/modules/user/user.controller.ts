@@ -1,9 +1,14 @@
-import { AuthGuard, AuthedRequest } from "@/modules/auth/auth.guard"
+import {
+    AuthGuard,
+    AuthedRequest,
+    OptionalAuthGuard,
+} from "@/modules/auth/auth.guard"
 import {
     Controller,
     HttpException,
     HttpStatus,
     Req,
+    Res,
     UseGuards,
 } from "@nestjs/common"
 import {
@@ -13,7 +18,7 @@ import {
 } from "./exceptions"
 import { ILoginUserInput, IRegisterUserInput, IUpdateUserInput } from "./inputs"
 import { UserService } from "./user.service"
-import { TypedBody, TypedRoute } from "@nestia/core"
+import { TypedBody, TypedParam, TypedRoute } from "@nestia/core"
 
 @Controller("users")
 export class UsersController {
@@ -125,6 +130,77 @@ export class UserController {
             const user = await this.usersService.updateUser(req.user, body)
 
             return { user: user }
+        } catch (error) {
+            throw new HttpException(
+                {
+                    status: HttpStatus.NOT_FOUND,
+                    error: (error as Error).message,
+                },
+                HttpStatus.NOT_FOUND,
+            )
+        }
+    }
+}
+
+@Controller("profiles")
+export class ProfileController {
+    constructor(private readonly usersService: UserService) {}
+
+    @UseGuards(OptionalAuthGuard)
+    @TypedRoute.Get(":username")
+    public async getProfile(
+        @TypedParam("username") username: string,
+        @Req() req: AuthedRequest,
+    ) {
+        try {
+            const user = await this.usersService.getProfile(username, req.user)
+
+            return { profile: user }
+        } catch (error) {
+            throw new HttpException(
+                {
+                    status: HttpStatus.NOT_FOUND,
+                    error: (error as Error).message,
+                },
+                HttpStatus.NOT_FOUND,
+            )
+        }
+    }
+
+    @UseGuards(AuthGuard)
+    @TypedRoute.Post(":username/follow")
+    public async followUser(
+        @TypedParam("username") username: string,
+        @Req() req: AuthedRequest,
+    ) {
+        try {
+            const user = await this.usersService.followUser(username, req.user)
+
+            return { profile: user }
+        } catch (error) {
+            throw new HttpException(
+                {
+                    status: HttpStatus.NOT_FOUND,
+                    error: (error as Error).message,
+                },
+                HttpStatus.NOT_FOUND,
+            )
+        }
+    }
+
+    @UseGuards(AuthGuard)
+    @TypedRoute.Delete(":username/follow")
+    public async unfollowUser(
+        @TypedParam("username") username: string,
+        @Req() req: AuthedRequest,
+    ) {
+        try {
+            const user = await this.usersService.unfollowUser(
+                username,
+                req.user,
+            )
+
+            return { profile: user }
         } catch (error) {
             throw new HttpException(
                 {

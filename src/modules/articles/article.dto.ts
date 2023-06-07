@@ -1,4 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger"
+import { AuthedRequestPayload } from "../auth/interfaces/auth-payload"
 import { ArticleEntity } from "./article.entity"
 
 export class ArticleDTO {
@@ -37,7 +38,10 @@ export class ArticleDTO {
         following: boolean
     }
 
-    constructor(articleEntity: ArticleEntity, currentUserId?: string) {
+    constructor(
+        articleEntity: ArticleEntity,
+        currentUserId?: AuthedRequestPayload["id"],
+    ) {
         this.slug = articleEntity.slug
         this.title = articleEntity.title
         this.description = articleEntity.description
@@ -46,8 +50,8 @@ export class ArticleDTO {
         this.createdAt = articleEntity.createdAt
         this.updatedAt = articleEntity.updatedAt
         this.favorited =
-            articleEntity.author.favorites?.some(
-                (favorite) => favorite.id === articleEntity.id,
+            articleEntity.favoritedBy?.some(
+                (user) => user.id === currentUserId,
             ) ?? false
         this.favoritesCount = articleEntity.favoritedBy?.length ?? 0
         this.author = {

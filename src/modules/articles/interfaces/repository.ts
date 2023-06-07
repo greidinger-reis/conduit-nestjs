@@ -1,20 +1,33 @@
+import { AuthedRequestPayload } from "@/modules/auth/interfaces/auth-payload"
 import { IUserEntity } from "@/modules/user/interfaces/entity"
 import { ArticleDTO } from "../article.dto"
 import { IArticleSearchParams } from "./search-params"
 
+export enum ArticleFeedType {
+    GLOBAL = "global",
+    FEED = "feed",
+}
+
 export interface IArticleRepository {
     findOneBySlug(
         slug: string,
-        currentUserId?: string,
+        user?: AuthedRequestPayload,
     ): Promise<ArticleDTO | null>
     findAll(
         searchParams: IArticleSearchParams,
-        currentUserId?: string,
-        type?: "global" | "feed",
+        user?: AuthedRequestPayload,
+        feedType?: ArticleFeedType,
     ): Promise<ArticleDTO[]>
 
     favoriteOneBySlug(
         slug: string,
-        currentUser: IUserEntity,
+        user?: IUserEntity,
     ): Promise<ArticleDTO>
+
+    unfavoriteOneBySlug(
+        slug: string,
+        user?: IUserEntity,
+    ): Promise<ArticleDTO>
+
+    findAllTags(): Promise<string[]>
 }

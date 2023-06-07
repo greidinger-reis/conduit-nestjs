@@ -15,3 +15,21 @@ export class InvalidCredentialsException extends Error {
         super("Invalid credentials")
     }
 }
+
+export class UserNotFoundException extends Error {
+    constructor() {
+        super("User not found")
+    }
+}
+
+export class UserAlreadyFollowedException extends Error {
+    constructor() {
+        super("User already followed")
+    }
+}
+
+export class UserNotFollowedException extends Error {
+    constructor() {
+        super("User not followed")
+    }
+}

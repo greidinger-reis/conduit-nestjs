@@ -1,13 +1,15 @@
 import { Injectable } from "@nestjs/common"
 import { DataSource, Repository } from "typeorm"
+import { AuthedRequestPayload } from "../auth/interfaces/auth-payload"
 import { UserEntity } from "../user/user.entity"
 import { ArticleDTO } from "./article.dto"
 import { ArticleEntity } from "./article.entity"
 import {
     ArticleNotFoundException,
     UserAlreadyFavoritedArticleException,
+    UserHasntFavoritedArticleException,
 } from "./exceptions"
-import { IArticleRepository } from "./interfaces/repository"
+import { ArticleFeedType, IArticleRepository } from "./interfaces/repository"
 import { IArticleSearchParams } from "./interfaces/search-params"
 
 @Injectable()
@@ -21,7 +23,7 @@ export class ArticleRepository
 
     async findOneBySlug(
         slug: string,
-        currentUserId?: string,
+        user?: AuthedRequestPayload,
     ): Promise<ArticleDTO | null> {
         const article = await this.findOneBy({ slug })
 
@@ -29,23 +31,23 @@ export class ArticleRepository
             return null
         }
 
-        return new ArticleDTO(article, currentUserId)
+        return new ArticleDTO(article, user?.id)
     }
 
     async findAll(
         searchParams: IArticleSearchParams,
-        currentUserId?: string,
-        type?: "global" | "feed",
+        user?: AuthedRequestPayload,
+        feedType: ArticleFeedType = ArticleFeedType.GLOBAL,
     ): Promise<ArticleDTO[]> {
         const query = this.createQueryBuilder("article")
             .leftJoinAndSelect("article.author", "author")
             .leftJoinAndSelect("article.favoritedBy", "favoritedBy")
             .leftJoinAndSelect("author.followers", "followers")
 
-        if (type === "feed") {
+        if (feedType === ArticleFeedType.FEED) {
             query
                 .leftJoinAndSelect("followers.following", "following")
-                .where("following.id = :currentUserId", { currentUserId })
+                .where("following.id = :currentUserId", { currentUserId: user })
         }
 
         if (searchParams.tag) {
@@ -61,8 +63,8 @@ export class ArticleRepository
         }
 
         if (searchParams.favorited) {
-            query.andWhere("favoritedBy.id = :currentUserId", {
-                currentUserId,
+            query.andWhere("favoritedBy.name = :favoritedBy", {
+                favoritedBy: searchParams.favorited,
             })
         }
 
@@ -73,16 +75,14 @@ export class ArticleRepository
         return await query
             .getMany()
             .then((articles) =>
-                articles.map(
-                    (article) => new ArticleDTO(article, currentUserId),
-                ),
+                articles.map((article) => new ArticleDTO(article, user?.id)),
             )
     }
 
     //@ts-expect-error wtf
     async favoriteOneBySlug(
         slug: string,
-        currentUser: UserEntity,
+        user: UserEntity,
     ): Promise<ArticleDTO> {
         const [article] = await this.find({
             where: { slug: slug },
@@ -95,19 +95,63 @@ export class ArticleRepository
         }
 
         if (!article.favoritedBy) {
-            article.favoritedBy = [currentUser]
+            article.favoritedBy = [user]
         } else {
             const favorites = new Set(article.favoritedBy.map((u) => u.id))
 
-            if (favorites.has(currentUser.id)) {
+            if (favorites.has(user.id)) {
                 throw new UserAlreadyFavoritedArticleException()
             }
 
-            article.favoritedBy.push(currentUser)
+            article.favoritedBy.push(user)
         }
 
         await this.save(article)
 
-        return new ArticleDTO(article, currentUser.id)
+        return new ArticleDTO(article, user.id)
+    }
+
+    //@ts-expect-error wtf
+    async unfavoriteOneBySlug(
+        slug: string,
+        user: UserEntity,
+    ): Promise<ArticleDTO> {
+        const [article] = await this.find({
+            where: { slug: slug },
+            relations: ["favoritedBy"],
+            take: 1,
+        })
+
+        if (!article) {
+            throw new ArticleNotFoundException()
+        }
+
+        if (!article.favoritedBy) {
+            article.favoritedBy = [user]
+        } else {
+            const favorites = new Set(article.favoritedBy.map((u) => u.id))
+
+            if (!favorites.has(user.id)) {
+                throw new UserHasntFavoritedArticleException()
+            }
+
+            article.favoritedBy = article.favoritedBy.filter(
+                (u) => u.id !== user.id,
+            )
+        }
+
+        await this.save(article)
+
+        return new ArticleDTO(article, user.id)
+    }
+
+    public async findAllTags(): Promise<string[]> {
+        const articles = await this.find({ select: ["tagList"] })
+
+        const tags = articles.flatMap((article) => article.tagList)
+
+        const uniqueTags = new Set(tags)
+
+        return Array.from(uniqueTags)
     }
 }

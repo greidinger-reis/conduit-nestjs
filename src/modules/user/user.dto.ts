@@ -25,3 +25,26 @@ export class UserDTO {
         this.token = token
     }
 }
+
+export class ProfileDTO {
+    @ApiProperty()
+    username: string
+
+    @ApiProperty()
+    bio: string | null
+
+    @ApiProperty()
+    image: string | null
+
+    @ApiProperty()
+    following: boolean
+
+    constructor(entity: UserEntity, currentUserId?: string) {
+        this.username = entity.name
+        this.bio = entity.bio
+        this.image = entity.image
+        this.following = entity.followers
+            ? entity.followers.some((follower) => follower.id === currentUserId)
+            : false
+    }
+}

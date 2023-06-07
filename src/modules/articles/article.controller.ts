@@ -17,9 +17,11 @@ import {
     ArticleNotFoundException,
     NotArticleAuthorException,
     UserAlreadyFavoritedArticleException,
+    UserHasntFavoritedArticleException,
 } from "./exceptions"
 import { ICreateArticleInput } from "./inputs/create"
 import { IUpdateArticleInput } from "./inputs/update"
+import { ArticleFeedType } from "./interfaces/repository"
 import { IArticleSearchParams } from "./interfaces/search-params"
 
 @Controller("articles")
@@ -35,7 +37,8 @@ export class ArticleController {
         console.log(searchParams)
         const articles = await this.articleService.findAll(
             searchParams,
-            req.user?.id,
+            req.user,
+            ArticleFeedType.GLOBAL,
         )
 
         return { articles: articles, articlesCount: articles.length }
@@ -60,8 +63,8 @@ export class ArticleController {
     ) {
         const articles = await this.articleService.findAll(
             searchParams,
-            req.user.id,
-            "feed",
+            req.user,
+            ArticleFeedType.FEED,
         )
 
         return { articles: articles, articlesCount: articles.length }
@@ -73,7 +76,7 @@ export class ArticleController {
         @TypedParam("slug") slug: string,
         @Req() req: OptionalAuthedRequest,
     ) {
-        const article = await this.articleService.findBySlug(slug, req.user?.id)
+        const article = await this.articleService.findBySlug(slug, req.user)
 
         return { article: article }
     }
@@ -159,5 +162,54 @@ export class ArticleController {
                 HttpStatus.INTERNAL_SERVER_ERROR,
             )
         }
+    }
+    @UseGuards(AuthGuard)
+    @TypedRoute.Delete(":slug/favorite")
+    async unfavoriteArticle(
+        @TypedParam("slug") slug: string,
+        @Req() req: AuthedRequest,
+    ) {
+        try {
+            const article = await this.articleService.unfavorite(slug, req.user)
+            return { article: article }
+        } catch (error) {
+            if (error instanceof ArticleNotFoundException) {
+                throw new HttpException(
+                    {
+                        status: HttpStatus.NOT_FOUND,
+                        error: error.message,
+                    },
+                    HttpStatus.NOT_FOUND,
+                )
+            }
+            if (error instanceof UserHasntFavoritedArticleException) {
+                throw new HttpException(
+                    {
+                        status: HttpStatus.FORBIDDEN,
+                        error: error.message,
+                    },
+                    HttpStatus.FORBIDDEN,
+                )
+            }
+            throw new HttpException(
+                {
+                    status: HttpStatus.INTERNAL_SERVER_ERROR,
+                    error: (error as Error).message,
+                },
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            )
+        }
+    }
+}
+
+@Controller("tags")
+export class TagController {
+    constructor(private readonly articleService: ArticleService) {}
+
+    @TypedRoute.Get()
+    public async getAllTags() {
+        const tags = await this.articleService.findAllTags()
+
+        return { tags: tags }
     }
 }

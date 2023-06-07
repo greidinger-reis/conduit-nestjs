@@ -5,11 +5,13 @@ import {
     EmailAlreadyInUseException,
     InvalidCredentialsException,
     UserNameAlreadyExistsException,
+    UserNotFollowedException,
+    UserNotFoundException,
 } from "./exceptions"
 import { ILoginUserInput } from "./inputs/login"
 import { IRegisterUserInput } from "./inputs/register"
 import { IUpdateUserInput } from "./inputs/update"
-import { UserDTO } from "./user.dto"
+import { ProfileDTO, UserDTO } from "./user.dto"
 import { UserEntity } from "./user.entity"
 import { UserRepository } from "./user.repository"
 
@@ -110,5 +112,76 @@ export class UserService {
         await this.userRepository.update({ id: userToUpdate.id }, userToUpdate)
 
         return new UserDTO(userToUpdate, currentUser.token)
+    }
+
+    public async getProfile(
+        userName: string,
+        currentUser?: AuthedRequestPayload,
+    ): Promise<ProfileDTO | null> {
+        const [found] = await this.userRepository.find({
+            where: { name: userName },
+            relations: ["followers"],
+            take: 1,
+        })
+
+        if (!found) return null
+
+        return new ProfileDTO(found, currentUser?.id)
+    }
+
+    public async followUser(
+        userName: string,
+        currentUser: AuthedRequestPayload,
+    ): Promise<ProfileDTO> {
+        const [user] = await this.userRepository.find({
+            where: { id: currentUser.id },
+            relations: ["following"],
+            take: 1,
+        })
+
+        if (!user) throw new UserNotFoundException()
+
+        const [userToFollow] = await this.userRepository.find({
+            where: { name: userName },
+            relations: ["followers"],
+            take: 1,
+        })
+
+        if (!userToFollow) throw new UserNotFoundException()
+
+        const followed = await this.userRepository.followUser(
+            userToFollow,
+            user,
+        )
+
+        return new ProfileDTO(followed, currentUser.id)
+    }
+
+    public async unfollowUser(
+        userName: string,
+        currentUser: AuthedRequestPayload,
+    ): Promise<ProfileDTO> {
+        const [user] = await this.userRepository.find({
+            where: { id: currentUser.id },
+            relations: ["following"],
+            take: 1,
+        })
+        if (!user) {
+            throw new UserNotFoundException()
+        }
+
+        const [userToUnfollow] = await this.userRepository.find({
+            where: { name: userName },
+            relations: ["followers"],
+            take: 1,
+        })
+        if (!userToUnfollow) throw new UserNotFoundException()
+
+        const unfollowed = await this.userRepository.unfollowUser(
+            userToUnfollow,
+            user,
+        )
+
+        return new ProfileDTO(unfollowed, user.id)
     }
 }

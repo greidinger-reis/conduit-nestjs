@@ -15,3 +15,9 @@ export class UserAlreadyFavoritedArticleException extends Error {
         super("User already favorited this article")
     }
 }
+
+export class UserHasntFavoritedArticleException extends Error {
+    constructor() {
+        super("User hasn't favorited this article")
+    }
+}

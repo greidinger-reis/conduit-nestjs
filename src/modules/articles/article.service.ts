@@ -1,4 +1,5 @@
 import { Injectable, UnauthorizedException } from "@nestjs/common"
+import { randomFillSync } from "node:crypto"
 import slugify from "slugify"
 import { AuthedRequestPayload } from "../auth/interfaces/auth-payload"
 import { UserRepository } from "../user/user.repository"
@@ -8,11 +9,10 @@ import { ArticleRepository } from "./article.repository"
 import {
     ArticleNotFoundException,
     NotArticleAuthorException,
-    UserAlreadyFavoritedArticleException,
 } from "./exceptions"
 import { ICreateArticleInput } from "./inputs/create"
 import { IUpdateArticleInput } from "./inputs/update"
-import { randomFillSync } from "node:crypto"
+import { ArticleFeedType } from "./interfaces/repository"
 import { IArticleSearchParams } from "./interfaces/search-params"
 
 @Injectable()
@@ -24,23 +24,23 @@ export class ArticleService {
 
     public async findAll(
         searchParams: IArticleSearchParams,
-        currentUserId = "",
-        type: "global" | "feed" = "global",
+        user?: AuthedRequestPayload,
+        feedType: ArticleFeedType = ArticleFeedType.GLOBAL,
     ) {
         const articles = await this.articleRepository.findAll(
             searchParams,
-            currentUserId,
-            type,
+            user,
+            feedType,
         )
 
         return articles
     }
 
-    public async findBySlug(slug: string, currentUserId = "") {
-        const article = await this.articleRepository.findOneBySlug(
-            slug,
-            currentUserId,
-        )
+    public async findBySlug(
+        slug: string,
+        user?: AuthedRequestPayload,
+    ): Promise<ArticleDTO | null> {
+        const article = await this.articleRepository.findOneBySlug(slug, user)
         return article
     }
 
@@ -98,7 +98,10 @@ export class ArticleService {
         return new ArticleDTO(article, user.id)
     }
 
-    public async delete(slug: string, user: AuthedRequestPayload) {
+    public async delete(
+        slug: string,
+        user: AuthedRequestPayload,
+    ): Promise<void> {
         const article = await this.articleRepository.findOneBy({ slug: slug })
         if (!article) throw new ArticleNotFoundException()
 
@@ -108,15 +111,46 @@ export class ArticleService {
     }
 
     /**
-     * @throws [UnauthorizedException, ArticleNotFoundException,UserAlreadyFavoritedArticleException]
+     * @throws [UnauthorizedException, ArticleNotFoundException, UserAlreadyFavoritedArticleException]
      * */
-    public async favorite(slug: string, user: AuthedRequestPayload) {
+    public async favorite(
+        slug: string,
+        user: AuthedRequestPayload,
+    ): Promise<ArticleDTO> {
         const currentUser = await this.userRepository.findById(user.id)
+
         if (!currentUser) throw new UnauthorizedException()
+
         const article = await this.articleRepository.favoriteOneBySlug(
             slug,
             currentUser,
         )
+
         return article
     }
+
+    /**
+     * @throws [UnauthorizedException, ArticleNotFoundException, UserHasntFavoritedArticleException]
+     * */
+    public async unfavorite(
+        slug: string,
+        user: AuthedRequestPayload,
+    ): Promise<ArticleDTO> {
+        const currentUser = await this.userRepository.findById(user.id)
+
+        if (!currentUser) throw new UnauthorizedException()
+
+        const article = await this.articleRepository.unfavoriteOneBySlug(
+            slug,
+            currentUser,
+        )
+
+        return article
+    }
+
+    public async findAllTags(): Promise<string[]> {
+        const tags = await this.articleRepository.findAllTags()
+        return tags
+    }
+
 }
