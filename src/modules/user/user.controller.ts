@@ -5,6 +5,7 @@ import {
 } from "@/modules/auth/auth.guard"
 import {
     Controller,
+    HttpCode,
     HttpException,
     HttpStatus,
     Req,
@@ -167,6 +168,7 @@ export class ProfileController {
         }
     }
 
+    @HttpCode(HttpStatus.OK)
     @UseGuards(AuthGuard)
     @TypedRoute.Post(":username/follow")
     public async followUser(

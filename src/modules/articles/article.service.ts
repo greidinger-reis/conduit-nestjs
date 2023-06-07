@@ -2,6 +2,7 @@ import { Injectable, UnauthorizedException } from "@nestjs/common"
 import { randomFillSync } from "node:crypto"
 import slugify from "slugify"
 import { AuthedRequestPayload } from "../auth/interfaces/auth-payload"
+import { CommentDTO } from "../comment/comment.dto"
 import { UserRepository } from "../user/user.repository"
 import { ArticleDTO } from "./article.dto"
 import { ArticleEntity } from "./article.entity"
@@ -152,5 +153,4 @@ export class ArticleService {
         const tags = await this.articleRepository.findAllTags()
         return tags
     }
-
 }

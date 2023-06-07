@@ -16,4 +16,19 @@ export class CommentEntity extends AbstractEntity implements ICommentEntity {
     @ManyToOne(() => ArticleEntity, (article) => article.comments)
     @JoinColumn({ name: "article_id" })
     article: ArticleEntity
+
+    public setBody(body: string){
+        this.body = body
+        return this
+    }
+
+    public setAuthor(author: UserEntity){
+        this.author = author
+        return this
+    }
+
+    public setArticle(article: ArticleEntity){
+        this.article = article
+        return this
+    }
 }
