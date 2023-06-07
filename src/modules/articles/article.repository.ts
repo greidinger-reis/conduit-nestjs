@@ -1,7 +1,12 @@
 import { Injectable } from "@nestjs/common"
 import { DataSource, Repository } from "typeorm"
+import { UserEntity } from "../user/user.entity"
 import { ArticleDTO } from "./article.dto"
 import { ArticleEntity } from "./article.entity"
+import {
+    ArticleNotFoundException,
+    UserAlreadyFavoritedArticleException,
+} from "./exceptions"
 import { IArticleRepository } from "./interfaces/repository"
 import { IArticleSearchParams } from "./interfaces/search-params"
 
@@ -72,5 +77,37 @@ export class ArticleRepository
                     (article) => new ArticleDTO(article, currentUserId),
                 ),
             )
+    }
+
+    //@ts-expect-error wtf
+    async favoriteOneBySlug(
+        slug: string,
+        currentUser: UserEntity,
+    ): Promise<ArticleDTO> {
+        const [article] = await this.find({
+            where: { slug: slug },
+            relations: ["favoritedBy"],
+            take: 1,
+        })
+
+        if (!article) {
+            throw new ArticleNotFoundException()
+        }
+
+        if (!article.favoritedBy) {
+            article.favoritedBy = [currentUser]
+        } else {
+            const favorites = new Set(article.favoritedBy.map((u) => u.id))
+
+            if (favorites.has(currentUser.id)) {
+                throw new UserAlreadyFavoritedArticleException()
+            }
+
+            article.favoritedBy.push(currentUser)
+        }
+
+        await this.save(article)
+
+        return new ArticleDTO(article, currentUser.id)
     }
 }

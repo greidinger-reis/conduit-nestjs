@@ -8,7 +8,6 @@ import {
     ManyToMany,
     ManyToOne,
     OneToMany,
-    TableColumn,
 } from "typeorm"
 import { CommentEntity } from "../comment/comment.entity"
 import { IArticleEntity } from "./interfaces/entity"
@@ -29,7 +28,9 @@ export class ArticleEntity extends AbstractEntity implements IArticleEntity {
 
     @Column({
         name: "tag_list",
-        type: "simple-array",
+        type: "varchar",
+        length: 255,
+        array: true,
         nullable: true,
     })
     tagList: string[]

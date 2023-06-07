@@ -3,3 +3,15 @@ export class NotArticleAuthorException extends Error {
         super("You are not the author of this article")
     }
 }
+
+export class ArticleNotFoundException extends Error {
+    constructor() {
+        super("Article not found")
+    }
+}
+
+export class UserAlreadyFavoritedArticleException extends Error {
+    constructor() {
+        super("User already favorited this article")
+    }
+}

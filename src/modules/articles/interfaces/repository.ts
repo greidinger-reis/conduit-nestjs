@@ -1,3 +1,4 @@
+import { IUserEntity } from "@/modules/user/interfaces/entity"
 import { ArticleDTO } from "../article.dto"
 import { IArticleSearchParams } from "./search-params"
 
@@ -11,4 +12,9 @@ export interface IArticleRepository {
         currentUserId?: string,
         type?: "global" | "feed",
     ): Promise<ArticleDTO[]>
+
+    favoriteOneBySlug(
+        slug: string,
+        currentUser: IUserEntity,
+    ): Promise<ArticleDTO>
 }

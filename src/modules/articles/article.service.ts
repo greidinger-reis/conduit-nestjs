@@ -1,11 +1,15 @@
-import { Injectable } from "@nestjs/common"
+import { Injectable, UnauthorizedException } from "@nestjs/common"
 import slugify from "slugify"
 import { AuthedRequestPayload } from "../auth/interfaces/auth-payload"
 import { UserRepository } from "../user/user.repository"
 import { ArticleDTO } from "./article.dto"
 import { ArticleEntity } from "./article.entity"
 import { ArticleRepository } from "./article.repository"
-import { NotArticleAuthorException } from "./exceptions"
+import {
+    ArticleNotFoundException,
+    NotArticleAuthorException,
+    UserAlreadyFavoritedArticleException,
+} from "./exceptions"
 import { ICreateArticleInput } from "./inputs/create"
 import { IUpdateArticleInput } from "./inputs/update"
 import { randomFillSync } from "node:crypto"
@@ -92,5 +96,27 @@ export class ArticleService {
         void (await this.articleRepository.update({ id: article.id }, article))
 
         return new ArticleDTO(article, user.id)
+    }
+
+    public async delete(slug: string, user: AuthedRequestPayload) {
+        const article = await this.articleRepository.findOneBy({ slug: slug })
+        if (!article) throw new ArticleNotFoundException()
+
+        if (article.author.id !== user.id) throw new NotArticleAuthorException()
+
+        await this.articleRepository.delete({ id: article.id })
+    }
+
+    /**
+     * @throws [UnauthorizedException, ArticleNotFoundException,UserAlreadyFavoritedArticleException]
+     * */
+    public async favorite(slug: string, user: AuthedRequestPayload) {
+        const currentUser = await this.userRepository.findById(user.id)
+        if (!currentUser) throw new UnauthorizedException()
+        const article = await this.articleRepository.favoriteOneBySlug(
+            slug,
+            currentUser,
+        )
+        return article
     }
 }
