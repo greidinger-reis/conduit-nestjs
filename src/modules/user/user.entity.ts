@@ -19,13 +19,12 @@ export class UserEntity extends AbstractEntity implements IUserEntity {
     password: string
 
     @Column({ nullable: true, length: 255 })
-    image: string
+    image: string | null
 
     @Column({ nullable: true, type: "text" })
-    bio: string
+    bio: string | null
 
     @OneToMany(() => ArticleEntity, (article) => article.author)
-    //@ts-expect-error idk
     articles: ArticleEntity[]
 
     @OneToMany(() => CommentEntity, (comment) => comment.author)
@@ -40,15 +39,12 @@ export class UserEntity extends AbstractEntity implements IUserEntity {
             name: "follower_id",
         },
     })
-    //@ts-expect-error idk
     following: UserEntity[]
 
     @ManyToMany(() => UserEntity, (user) => user.following)
-    //@ts-expect-error idk
     followers: UserEntity[]
 
     @ManyToMany(() => ArticleEntity, (article) => article.favoritedBy)
-    //@ts-expect-error idk
     favorites: ArticleEntity[]
 
     setName(name?: string): UserEntity {
@@ -73,7 +69,6 @@ export class UserEntity extends AbstractEntity implements IUserEntity {
     setImage(image?: string | null): UserEntity {
         if (image === undefined) return this
 
-        //@ts-expect-error idk
         this.image = image
 
         return this
@@ -82,7 +77,6 @@ export class UserEntity extends AbstractEntity implements IUserEntity {
     setBio(bio?: string | null): UserEntity {
         if (bio === undefined) return this
 
-        //@ts-expect-error idk
         this.bio = bio
 
         return this

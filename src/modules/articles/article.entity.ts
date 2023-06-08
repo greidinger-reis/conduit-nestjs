@@ -40,7 +40,6 @@ export class ArticleEntity extends AbstractEntity implements IArticleEntity {
         onDelete: "CASCADE",
     })
     @JoinColumn({ name: "author_id" })
-    //@ts-expect-error idk
     author: UserEntity
 
     @ManyToMany(() => UserEntity, (user) => user.favorites)

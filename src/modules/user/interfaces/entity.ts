@@ -37,5 +37,5 @@ export interface IUserEntity extends IAbstractEntity {
 
     favorites: IArticleEntity[]
 
-    commments: ICommentEntity[]
+    comments: ICommentEntity[]
 }
