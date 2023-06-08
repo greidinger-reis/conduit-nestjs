@@ -15,7 +15,7 @@ export interface IUserEntity extends IAbstractEntity {
      */
     email: string
 
-    emailVerifiedAt: Date
+    emailVerifiedAt: Date | null
     /**
      * @pattern ^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()\-_=+{};:,<.>]).+$
      * @minLength 8

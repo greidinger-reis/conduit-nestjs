@@ -17,9 +17,9 @@ import {
     InvalidCredentialsException,
     UserNameAlreadyExistsException,
 } from "./exceptions"
-import { ILoginUserInput, IRegisterUserInput, IUpdateUserInput } from "./inputs"
 import { UserService } from "./user.service"
 import { TypedBody, TypedParam, TypedRoute } from "@nestia/core"
+import { LoginUserDTO, RegisterUserDTO, UpdateUserDTO } from "./dto"
 
 @Controller("users")
 export class UsersController {
@@ -28,7 +28,7 @@ export class UsersController {
     @TypedRoute.Post("login")
     public async loginUser(
         @TypedBody()
-        body: ILoginUserInput,
+        body: LoginUserDTO,
     ) {
         try {
             const user = await this.userService.loginUser(body)
@@ -59,7 +59,7 @@ export class UsersController {
     @TypedRoute.Post()
     public async registerUser(
         @TypedBody()
-        body: IRegisterUserInput,
+        body: RegisterUserDTO,
     ) {
         try {
             const user = await this.userService.registerUser(body)
@@ -125,7 +125,7 @@ export class UserController {
     public async updateCurrentUser(
         @Req() req: AuthedRequest,
         @TypedBody()
-        body: IUpdateUserInput,
+        body: UpdateUserDTO,
     ) {
         try {
             const user = await this.usersService.updateUser(req.user, body)

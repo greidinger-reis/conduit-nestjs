@@ -1,7 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger"
-import { UserEntity } from "./user.entity"
+import { UserEntity } from "../user.entity"
 
-export class UserDTO {
+export class UserRO {
     @ApiProperty()
     email: string
 
@@ -18,15 +18,12 @@ export class UserDTO {
     image: string | null
 
     constructor(entity: UserEntity, token: string) {
-        this.email = entity.email
-        this.name = entity.name
-        this.bio = entity.bio
-        this.image = entity.image
+        Object.assign(this, entity)
         this.token = token
     }
 }
 
-export class ProfileDTO {
+export class ProfileRO {
     @ApiProperty()
     username: string
 
@@ -40,11 +37,6 @@ export class ProfileDTO {
     following: boolean
 
     constructor(entity: UserEntity, currentUserId?: string) {
-        this.username = entity.name
-        this.bio = entity.bio
-        this.image = entity.image
-        this.following = entity.followers
-            ? entity.followers.some((follower) => follower.id === currentUserId)
-            : false
+        Object.assign(this, entity)
     }
 }

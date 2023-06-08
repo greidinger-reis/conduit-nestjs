@@ -18,22 +18,18 @@ export class UserRepository
         super(UserEntity, dataSource.createEntityManager())
     }
 
-    // @ts-expect-error wtf
     async findByEmail(email: string): Promise<UserEntity | null> {
         return this.findOne({ where: { email } })
     }
 
-    // @ts-expect-error wtf
     async findByName(name: string): Promise<UserEntity | null> {
         return this.findOne({ where: { name } })
     }
 
-    // @ts-expect-error wtf
     async findById(id: string): Promise<UserEntity | null> {
         return this.findOne({ where: { id } })
     }
 
-    // @ts-expect-error wtf
     public async followUser(
         userToFollow: UserEntity,
         user: UserEntity,
@@ -55,7 +51,6 @@ export class UserRepository
         return userToFollow
     }
 
-    // @ts-expect-error wtf
     public async unfollowUser(
         userToUnfollow: UserEntity,
         user: UserEntity,

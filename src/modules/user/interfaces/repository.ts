@@ -1,4 +1,3 @@
-import { AuthedRequestPayload } from "@/modules/auth/interfaces/auth-payload"
 import { IUserEntity } from "./entity"
 
 export interface IUserRepository {
@@ -6,11 +5,11 @@ export interface IUserRepository {
     findByName(name: string): Promise<IUserEntity | null>
     findById(id: string): Promise<IUserEntity | null>
     followUser(
-        user: AuthedRequestPayload,
+        user: IUserEntity,
         userToFollow: IUserEntity,
     ): Promise<IUserEntity>
     unfollowUser(
-        user: AuthedRequestPayload,
+        user: IUserEntity,
         userToUnfollow: IUserEntity,
     ): Promise<IUserEntity>
 }

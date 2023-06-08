@@ -1,5 +1,5 @@
 import { IUserEntity } from "../interfaces/entity" 
 
-export interface IRegisterUserInput {
+export interface RegisterUserDTO {
     user: Pick<IUserEntity, "name" | "email" | "password">
 }

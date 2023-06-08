@@ -1,17 +1,14 @@
 import { AuthService } from "@/modules/auth/auth.service"
 import { Injectable } from "@nestjs/common"
 import { AuthedRequestPayload } from "../auth/interfaces/auth-payload"
+import { RegisterUserDTO, UpdateUserDTO, LoginUserDTO } from "./dto"
+import { ProfileRO, UserRO } from "./dto/response-objects"
 import {
     EmailAlreadyInUseException,
     InvalidCredentialsException,
     UserNameAlreadyExistsException,
-    UserNotFollowedException,
     UserNotFoundException,
 } from "./exceptions"
-import { ILoginUserInput } from "./inputs/login"
-import { IRegisterUserInput } from "./inputs/register"
-import { IUpdateUserInput } from "./inputs/update"
-import { ProfileDTO, UserDTO } from "./user.dto"
 import { UserEntity } from "./user.entity"
 import { UserRepository } from "./user.repository"
 
@@ -25,45 +22,38 @@ export class UserService {
     public async getCurrentUser(user: {
         token: string
         id: string
-    }): Promise<UserDTO | null> {
+    }): Promise<UserRO | null> {
         const found = await this.userRepository.findById(user.id)
         if (!found) return null
 
-        return new UserDTO(found, user.token)
+        return new UserRO(found, user.token)
     }
 
-    public async registerUser({ user }: IRegisterUserInput): Promise<UserDTO> {
-        const foundEmail = await this.userRepository.findByEmail(user.email)
+    public async registerUser(input: RegisterUserDTO): Promise<UserRO> {
+        const foundEmail = await this.userRepository.findByEmail(
+            input.user.email,
+        )
         if (foundEmail) throw new EmailAlreadyInUseException()
 
-        const foundName = await this.userRepository.findByName(user.name)
+        const foundName = await this.userRepository.findByName(input.user.name)
         if (foundName) throw new UserNameAlreadyExistsException()
 
-        const hashedPassword = await this.authService.hashPassword(
-            user.password,
-        )
+        const user = await this.userRepository.save(new UserEntity(input.user))
 
-        const createdUser = await this.userRepository.save(
-            new UserEntity()
-                .setName(user.name)
-                .setEmail(user.email)
-                .setPassword(hashedPassword),
-        )
+        const token = await this.authService.generateToken(user.id)
 
-        const token = await this.authService.generateToken(createdUser.id)
-
-        return new UserDTO(createdUser, token)
+        return new UserRO(user, token)
     }
 
-    public async loginUser({ user }: ILoginUserInput): Promise<UserDTO> {
-        const found = await this.userRepository.findByEmail(user.email)
+    public async loginUser(input: LoginUserDTO): Promise<UserRO> {
+        const found = await this.userRepository.findByEmail(input.user.email)
 
         if (!found) {
             throw new InvalidCredentialsException()
         }
 
         const isPasswordValid = await this.authService.comparePasswords(
-            user.password,
+            input.user.password,
             found.password,
         )
 
@@ -73,16 +63,16 @@ export class UserService {
 
         const token = await this.authService.generateToken(found.id)
 
-        return new UserDTO(found, token)
+        return new UserRO(found, token)
     }
 
     public async updateUser(
         currentUser: AuthedRequestPayload,
-        { user }: IUpdateUserInput,
-    ): Promise<UserDTO> {
-        const userToUpdate = await this.userRepository.findById(currentUser.id)
+        input: UpdateUserDTO,
+    ): Promise<UserRO> {
+        const user = await this.userRepository.findById(currentUser.id)
 
-        if (!userToUpdate) throw new Error("User not found")
+        if (!user) throw new Error("User not found")
 
         if (user.name) {
             const foundName = await this.userRepository.findByName(user.name)
@@ -98,26 +88,17 @@ export class UserService {
             }
         }
 
-        userToUpdate
-            .setName(user.name)
-            .setEmail(user.email)
-            .setBio(user.bio)
-            .setPassword(
-                user.password
-                    ? await this.authService.hashPassword(user.password)
-                    : undefined,
-            )
-            .setImage(user.image)
+        user.update(input.user)
 
-        await this.userRepository.update({ id: userToUpdate.id }, userToUpdate)
+        await this.userRepository.save(user)
 
-        return new UserDTO(userToUpdate, currentUser.token)
+        return new UserRO(user, currentUser.token)
     }
 
     public async getProfile(
         userName: string,
         currentUser?: AuthedRequestPayload,
-    ): Promise<ProfileDTO | null> {
+    ): Promise<ProfileRO | null> {
         const [found] = await this.userRepository.find({
             where: { name: userName },
             relations: ["followers"],
@@ -126,13 +107,13 @@ export class UserService {
 
         if (!found) return null
 
-        return new ProfileDTO(found, currentUser?.id)
+        return new ProfileRO(found, currentUser?.id)
     }
 
     public async followUser(
         userName: string,
         currentUser: AuthedRequestPayload,
-    ): Promise<ProfileDTO> {
+    ): Promise<ProfileRO> {
         const [user] = await this.userRepository.find({
             where: { id: currentUser.id },
             relations: ["following"],
@@ -154,13 +135,13 @@ export class UserService {
             user,
         )
 
-        return new ProfileDTO(followed, currentUser.id)
+        return new ProfileRO(followed, currentUser.id)
     }
 
     public async unfollowUser(
         userName: string,
         currentUser: AuthedRequestPayload,
-    ): Promise<ProfileDTO> {
+    ): Promise<ProfileRO> {
         const [user] = await this.userRepository.find({
             where: { id: currentUser.id },
             relations: ["following"],
@@ -182,7 +163,6 @@ export class UserService {
             user,
         )
 
-        return new ProfileDTO(unfollowed, user.id)
+        return new ProfileRO(unfollowed, user.id)
     }
-
 }

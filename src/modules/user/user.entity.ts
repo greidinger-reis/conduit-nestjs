@@ -1,8 +1,17 @@
 import { AbstractEntity } from "@/common/abstract.entity"
-import { Column, Entity, JoinTable, ManyToMany, OneToMany } from "typeorm"
+import {
+    BeforeInsert,
+    BeforeUpdate,
+    Column,
+    Entity,
+    JoinTable,
+    ManyToMany,
+    OneToMany,
+} from "typeorm"
 import { ArticleEntity } from "../articles/article.entity"
 import { CommentEntity } from "../comment/comment.entity"
 import { IUserEntity } from "./interfaces/entity"
+import { hash } from "bcrypt"
 
 @Entity({ name: "user" })
 export class UserEntity extends AbstractEntity implements IUserEntity {
@@ -13,7 +22,7 @@ export class UserEntity extends AbstractEntity implements IUserEntity {
     email: string
 
     @Column({ nullable: true, type: "timestamp", name: "email_verified_at" })
-    emailVerifiedAt: Date
+    emailVerifiedAt: Date | null
 
     @Column({ length: 255 })
     password: string
@@ -47,38 +56,18 @@ export class UserEntity extends AbstractEntity implements IUserEntity {
     @ManyToMany(() => ArticleEntity, (article) => article.favoritedBy)
     favorites: ArticleEntity[]
 
-    setName(name?: string): UserEntity {
-        if (!name) return this
-
-        this.name = name
-        return this
+    @BeforeInsert()
+    @BeforeUpdate()
+    async hashPassword() {
+        this.password = await hash(this.password, 12)
     }
 
-    setEmail(email?: string): UserEntity {
-        if (!email) return this
-        this.email = email
-        return this
+    constructor(user: Partial<IUserEntity>) {
+        super()
+        Object.assign(this, user)
     }
 
-    setPassword(password?: string): UserEntity {
-        if (!password) return this
-        this.password = password
-        return this
-    }
-
-    setImage(image?: string | null): UserEntity {
-        if (image === undefined) return this
-
-        this.image = image
-
-        return this
-    }
-
-    setBio(bio?: string | null): UserEntity {
-        if (bio === undefined) return this
-
-        this.bio = bio
-
-        return this
+    update(user: Partial<IUserEntity>) {
+        Object.assign(this, user)
     }
 }

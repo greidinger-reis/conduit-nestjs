@@ -1,6 +1,6 @@
 import { IUserEntity } from "../interfaces/entity"
 
-export interface IUpdateUserInput {
+export interface UpdateUserDTO {
     user: Partial<
         Pick<IUserEntity, "name" | "email" | "password" | "image" | "bio">
     >
