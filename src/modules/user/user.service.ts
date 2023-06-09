@@ -1,7 +1,7 @@
 import { AuthService } from "@/modules/auth/auth.service"
 import { Injectable } from "@nestjs/common"
 import { AuthedRequestPayload } from "../auth/interfaces/auth-payload"
-import { RegisterUserDTO, UpdateUserDTO, LoginUserDTO } from "./dto"
+import { RegisterUserDTO, UpdateUserDTO, LoginUserDTO, ILoginUserDTO } from "./dto"
 import { ProfileRO, UserRO } from "./dto/response-objects"
 import {
     EmailAlreadyInUseException,
@@ -45,7 +45,7 @@ export class UserService {
         return new UserRO(user, token)
     }
 
-    public async loginUser(input: LoginUserDTO): Promise<UserRO> {
+    public async loginUser(input: ILoginUserDTO): Promise<UserRO> {
         const found = await this.userRepository.findByEmail(input.user.email)
 
         if (!found) {

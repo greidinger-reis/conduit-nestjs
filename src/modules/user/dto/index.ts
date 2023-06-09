@@ -1,3 +1,3 @@
-export { LoginUserDTO } from "./login"
-export { RegisterUserDTO } from "./register"
-export { UpdateUserDTO } from "./update"
+export { ILoginUserDTO, LoginUserDTO } from "./login"
+export { IRegisterUserDTO, RegisterUserDTO } from "./register"
+export { IUpdateUserDTO, UpdateUserDTO } from "./update"

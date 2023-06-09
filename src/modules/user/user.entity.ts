@@ -27,7 +27,7 @@ export class UserEntity extends AbstractEntity implements IUserEntity {
     @Column({ length: 255 })
     password: string
 
-    @Column({ nullable: true, length: 255 })
+    @Column({ type: "varchar", nullable: true, length: 255 })
     image: string | null
 
     @Column({ nullable: true, type: "text" })

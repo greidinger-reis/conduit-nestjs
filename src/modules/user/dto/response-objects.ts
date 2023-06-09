@@ -11,10 +11,10 @@ export class UserRO {
     @ApiProperty()
     name: string
 
-    @ApiProperty()
+    @ApiProperty({ type: "string", nullable: true })
     bio: string | null
 
-    @ApiProperty()
+    @ApiProperty({ type: "string", nullable: true })
     image: string | null
 
     constructor(entity: UserEntity, token: string) {
@@ -27,10 +27,10 @@ export class ProfileRO {
     @ApiProperty()
     username: string
 
-    @ApiProperty()
+    @ApiProperty({ type: "string", nullable: true })
     bio: string | null
 
-    @ApiProperty()
+    @ApiProperty({ type: "string", nullable: true })
     image: string | null
 
     @ApiProperty()
@@ -38,5 +38,8 @@ export class ProfileRO {
 
     constructor(entity: UserEntity, currentUserId?: string) {
         Object.assign(this, entity)
+        this.following = currentUserId
+            ? entity.followers.some((follower) => follower.id === currentUserId)
+            : false
     }
 }

@@ -12,7 +12,7 @@ import {
     Req,
     UseGuards,
 } from "@nestjs/common"
-import { CommentDTO } from "../comment/comment.dto"
+import { CommentRO } from "../comment/comment.dto"
 import { CommentService } from "../comment/comment.service"
 import { CommentNotFoundException, NotCommentAuthorException } from "../comment/exceptions"
 import { ICreateCommentInput } from "../comment/inputs/create"
@@ -214,7 +214,7 @@ export class ArticleController {
     async getComments(
         @TypedParam("slug") slug: string,
         @Req() req: OptionalAuthedRequest,
-    ): Promise<{ comments: CommentDTO[] }> {
+    ): Promise<{ comments: CommentRO[] }> {
         const comments = await this.commentService.findAllByArticleSlug(
             slug,
             req.user,
@@ -229,7 +229,7 @@ export class ArticleController {
         @TypedParam("slug") slug: string,
         @TypedBody() input: ICreateCommentInput,
         @Req() req: AuthedRequest,
-    ): Promise<{ comment: CommentDTO }> {
+    ): Promise<{ comment: CommentRO }> {
         const comment = await this.commentService.create(slug, input, req.user)
 
         return { comment: comment }

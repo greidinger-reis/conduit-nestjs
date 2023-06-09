@@ -5,11 +5,11 @@ import {
     UnauthorizedException,
 } from "@nestjs/common"
 import { AuthService } from "./auth.service"
-import { Request } from "express"
+import { FastifyRequest } from "fastify"
 import { AuthedRequestPayload } from "./interfaces/auth-payload"
 
-export type AuthedRequest = Request & { user: AuthedRequestPayload }
-export type OptionalAuthedRequest = Request & {
+export type AuthedRequest = FastifyRequest & { user: AuthedRequestPayload }
+export type OptionalAuthedRequest = FastifyRequest & {
     user?: AuthedRequestPayload
 }
 
@@ -31,7 +31,7 @@ export class AuthGuard implements CanActivate {
         return true
     }
 
-    private extractFromHeader(req: Request): string | null {
+    private extractFromHeader(req: FastifyRequest): string | null {
         const [type, token] = req.headers.authorization?.split(" ") ?? []
         return type === "Token" ? token : null
     }
@@ -55,7 +55,7 @@ export class OptionalAuthGuard implements CanActivate {
         }
     }
 
-    private extractFromHeader(req: Request): string | null {
+    private extractFromHeader(req: FastifyRequest): string | null {
         const [type, token] = req.headers.authorization?.split(" ") ?? []
         return type === "Token" ? token : null
     }

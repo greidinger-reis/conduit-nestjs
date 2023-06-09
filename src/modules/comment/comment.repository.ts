@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common"
 import { DataSource, Repository } from "typeorm"
 import { AuthedRequestPayload } from "../auth/interfaces/auth-payload"
-import { CommentDTO } from "./comment.dto"
+import { CommentRO } from "./comment.dto"
 import { CommentEntity } from "./comment.entity"
 import { ICommentRepository } from "./interfaces/repository"
 

@@ -1,5 +1,5 @@
 import { AuthedRequestPayload } from "../auth/interfaces/auth-payload"
-import { CommentDTO } from "./comment.dto"
+import { CommentRO } from "./comment.dto"
 import { CommentRepository } from "./comment.repository"
 import { Injectable } from "@nestjs/common"
 import { ICreateCommentInput } from "./inputs/create"
@@ -25,11 +25,11 @@ export class CommentService {
     public async findAllByArticleSlug(
         slug: string,
         currentUser?: AuthedRequestPayload,
-    ): Promise<CommentDTO[]> {
+    ): Promise<CommentRO[]> {
         const comments = await this.commentRepository.findAllByArticleSlug(slug)
 
         return comments.map(
-            (comment) => new CommentDTO(comment, currentUser?.id),
+            (comment) => new CommentRO(comment, currentUser?.id),
         )
     }
 
@@ -37,7 +37,7 @@ export class CommentService {
         slug: string,
         input: ICreateCommentInput,
         currentUser: AuthedRequestPayload,
-    ): Promise<CommentDTO> {
+    ): Promise<CommentRO> {
         const authorEntity = await this.userRepository.findById(currentUser.id)
         if (!authorEntity) {
             throw new UserNotFoundException()
@@ -58,7 +58,7 @@ export class CommentService {
 
         await this.commentRepository.save(comment)
 
-        return new CommentDTO(comment, currentUser.id)
+        return new CommentRO(comment, currentUser.id)
     }
 
     public async delete(

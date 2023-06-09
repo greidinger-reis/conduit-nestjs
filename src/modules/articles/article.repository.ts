@@ -79,7 +79,6 @@ export class ArticleRepository
             )
     }
 
-    //@ts-expect-error wtf
     async favoriteOneBySlug(
         slug: string,
         user: UserEntity,
@@ -111,7 +110,6 @@ export class ArticleRepository
         return new ArticleDTO(article, user.id)
     }
 
-    //@ts-expect-error wtf
     async unfavoriteOneBySlug(
         slug: string,
         user: UserEntity,

@@ -6,6 +6,7 @@ import {
 } from "@nestjs/platform-fastify"
 import fastifyCsrf from "@fastify/csrf-protection"
 import { AppModule } from "./app.module"
+import { setupSwagger } from "./swagger-setup"
 
 async function bootstrap() {
     const app = await NestFactory.create<NestFastifyApplication>(
@@ -19,7 +20,10 @@ async function bootstrap() {
 
     app.setGlobalPrefix("api")
 
+    setupSwagger(app)
+
     await app.listen(8080, "0.0.0.0")
+
     console.log(`Listening on ${await app.getUrl()}`)
 }
 bootstrap()
