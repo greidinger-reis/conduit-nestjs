@@ -56,45 +56,12 @@ export class ArticleEntity extends AbstractEntity implements IArticleEntity {
     @OneToMany(() => CommentEntity, (comment) => comment.article)
     comments: CommentEntity[]
 
-    public setSlug(slug?: string) {
-        if (!slug) return this
-
-        this.slug = slug
-        return this
+    constructor(article: Partial<ArticleEntity>) {
+        super()
+        Object.assign(this, article)
     }
 
-    public setTitle(title?: string) {
-        if (!title) return this
-
-        this.title = title
-        return this
-    }
-
-    public setDescription(description?: string) {
-        if (!description) return this
-
-        this.description = description
-        return this
-    }
-
-    public setBody(body?: string) {
-        if (!body) return this
-
-        this.body = body
-        return this
-    }
-
-    public setTagList(tagList?: string[]) {
-        if (!tagList) return this
-
-        this.tagList = tagList
-        return this
-    }
-
-    public setAuthor(author?: UserEntity) {
-        if (!author) return this
-
-        this.author = author
-        return this
+    update(input: Partial<ArticleEntity>) {
+        Object.assign(this, input)
     }
 }

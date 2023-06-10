@@ -2,7 +2,7 @@ import { Injectable } from "@nestjs/common"
 import { DataSource, Repository } from "typeorm"
 import { AuthedRequestPayload } from "../auth/interfaces/auth-payload"
 import { UserEntity } from "../user/user.entity"
-import { ArticleDTO } from "./article.dto"
+import { ArticleRO } from "./article.dto"
 import { ArticleEntity } from "./article.entity"
 import {
     ArticleNotFoundException,
@@ -24,21 +24,21 @@ export class ArticleRepository
     async findOneBySlug(
         slug: string,
         user?: AuthedRequestPayload,
-    ): Promise<ArticleDTO | null> {
+    ): Promise<ArticleRO | null> {
         const article = await this.findOneBy({ slug })
 
         if (!article) {
             return null
         }
 
-        return new ArticleDTO(article, user?.id)
+        return new ArticleRO(article, user?.id)
     }
 
     async findAll(
         searchParams: IArticleSearchParams,
         user?: AuthedRequestPayload,
         feedType: ArticleFeedType = ArticleFeedType.GLOBAL,
-    ): Promise<ArticleDTO[]> {
+    ): Promise<ArticleRO[]> {
         const query = this.createQueryBuilder("article")
             .leftJoinAndSelect("article.author", "author")
             .leftJoinAndSelect("article.favoritedBy", "favoritedBy")
@@ -75,14 +75,14 @@ export class ArticleRepository
         return await query
             .getMany()
             .then((articles) =>
-                articles.map((article) => new ArticleDTO(article, user?.id)),
+                articles.map((article) => new ArticleRO(article, user?.id)),
             )
     }
 
     async favoriteOneBySlug(
         slug: string,
         user: UserEntity,
-    ): Promise<ArticleDTO> {
+    ): Promise<ArticleRO> {
         const [article] = await this.find({
             where: { slug: slug },
             relations: ["favoritedBy"],
@@ -107,13 +107,13 @@ export class ArticleRepository
 
         await this.save(article)
 
-        return new ArticleDTO(article, user.id)
+        return new ArticleRO(article, user.id)
     }
 
     async unfavoriteOneBySlug(
         slug: string,
         user: UserEntity,
-    ): Promise<ArticleDTO> {
+    ): Promise<ArticleRO> {
         const [article] = await this.find({
             where: { slug: slug },
             relations: ["favoritedBy"],
@@ -140,7 +140,7 @@ export class ArticleRepository
 
         await this.save(article)
 
-        return new ArticleDTO(article, user.id)
+        return new ArticleRO(article, user.id)
     }
 
     public async findAllTags(): Promise<string[]> {

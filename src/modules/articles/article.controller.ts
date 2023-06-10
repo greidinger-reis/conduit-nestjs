@@ -12,11 +12,15 @@ import {
     Req,
     UseGuards,
 } from "@nestjs/common"
+import { ApiBody, ApiCreatedResponse, ApiHeader, ApiOkResponse, ApiOperation, ApiQuery, ApiTags, ApiUnauthorizedResponse } from "@nestjs/swagger"
 import { CommentRO } from "../comment/comment.dto"
 import { CommentService } from "../comment/comment.service"
-import { CommentNotFoundException, NotCommentAuthorException } from "../comment/exceptions"
+import {
+    CommentNotFoundException,
+    NotCommentAuthorException,
+} from "../comment/exceptions"
 import { ICreateCommentInput } from "../comment/inputs/create"
-import { ArticleDTO } from "./article.dto"
+import { _ArticleRO, MultipleArticlesRO, ArticleRO } from "./article.dto"
 import { ArticleService } from "./article.service"
 import {
     ArticleNotFoundException,
@@ -24,24 +28,55 @@ import {
     UserAlreadyFavoritedArticleException,
     UserHasntFavoritedArticleException,
 } from "./exceptions"
-import { ICreateArticleInput } from "./inputs/create"
+import { CreateArticleDTO, ICreateArticleDTO } from "./inputs/create"
 import { IUpdateArticleInput } from "./inputs/update"
 import { ArticleFeedType } from "./interfaces/repository"
 import { IArticleSearchParams } from "./interfaces/search-params"
 
 @Controller("articles")
+@ApiTags("articles")
 export class ArticleController {
     constructor(
         private readonly articleService: ArticleService,
         private readonly commentService: CommentService,
     ) {}
 
-    @UseGuards(OptionalAuthGuard)
     @TypedRoute.Get()
+    @UseGuards(OptionalAuthGuard)
+    @ApiOperation({ summary: "Get all articles" })
+    @ApiQuery({
+        name: "tag",
+        required: false,
+        description: "Filter by tag",
+    })
+    @ApiQuery({
+        name: "author",
+        required: false,
+        description: "Filter by author",
+    })
+    @ApiQuery({
+        name: "favorited",
+        required: false,
+        description: "Filter articles favorited by user",
+    })
+    @ApiQuery({
+        name: "limit",
+        required: false,
+        description: "Limit number of articles (default is 20)",
+    })
+    @ApiQuery({
+        name: "offset",
+        required: false,
+        description: "Offset/skip number of articles (default is 0)",
+    })
+    @ApiOkResponse({
+        description: "Articles",
+        type: MultipleArticlesRO,
+    })
     async getAllArticles(
         @TypedQuery() searchParams: IArticleSearchParams,
         @Req() req: OptionalAuthedRequest,
-    ): Promise<{ articles: ArticleDTO[]; articlesCount: number }> {
+    ): Promise<MultipleArticlesRO> {
         console.log(searchParams)
         const articles = await this.articleService.findAll(
             searchParams,
@@ -49,33 +84,84 @@ export class ArticleController {
             ArticleFeedType.GLOBAL,
         )
 
-        return { articles: articles, articlesCount: articles.length }
+        return new MultipleArticlesRO(articles)
     }
 
-    @UseGuards(AuthGuard)
     @TypedRoute.Post()
+    @UseGuards(AuthGuard)
+    @ApiOperation({ summary: "Create article" })
+    @ApiHeader({
+        name: "Authorization",
+        description: "JWT token",
+        example: "Token jwt.token.here",
+    })
+    @ApiBody({
+        description: "Create article input",
+        type: CreateArticleDTO,
+    })
+    @ApiUnauthorizedResponse({
+        description: "Unauthorized",
+    })
+    @ApiCreatedResponse({
+        description: "Article",
+        type: ArticleRO,
+    })
     async createArticle(
-        @TypedBody() input: ICreateArticleInput,
+        @TypedBody() input: CreateArticleDTO,
         @Req() req: AuthedRequest,
-    ): Promise<{ article: ArticleDTO }> {
+    ): Promise<ArticleRO> {
         const article = await this.articleService.create(input, req.user)
 
         return { article: article }
     }
 
-    @UseGuards(AuthGuard)
     @TypedRoute.Get("feed")
+    @UseGuards(AuthGuard)
+    @ApiOperation({ summary: "Get feed of articles for current user" })
+    @ApiHeader({
+        name: "Authorization",
+        description: "JWT token",
+        example: "Token jwt.token.here",
+    })
+    @ApiQuery({
+        name: "tag",
+        required: false,
+        description: "Filter by tag",
+    })
+    @ApiQuery({
+        name: "author",
+        required: false,
+        description: "Filter by author",
+    })
+    @ApiQuery({
+        name: "favorited",
+        required: false,
+        description: "Filter articles favorited by user",
+    })
+    @ApiQuery({
+        name: "limit",
+        required: false,
+        description: "Limit number of articles (default is 20)",
+    })
+    @ApiQuery({
+        name: "offset",
+        required: false,
+        description: "Offset/skip number of articles (default is 0)",
+    })
+    @ApiUnauthorizedResponse({
+        description: "Unauthorized",
+    })
     async getFeedArticles(
         @TypedQuery() searchParams: IArticleSearchParams,
         @Req() req: AuthedRequest,
-    ): Promise<{ articles: ArticleDTO[]; articlesCount: number }> {
+    ): Promise<MultipleArticlesRO> {
         const articles = await this.articleService.findAll(
             searchParams,
             req.user,
             ArticleFeedType.FEED,
         )
 
-        return { articles: articles, articlesCount: articles.length }
+        return new MultipleArticlesRO(articles)
     }
 
     @UseGuards(OptionalAuthGuard)
@@ -83,10 +169,9 @@ export class ArticleController {
     async getArticle(
         @TypedParam("slug") slug: string,
         @Req() req: OptionalAuthedRequest,
-    ): Promise<{ article: ArticleDTO | null }> {
+    ): Promise<ArticleRO | null> {
         const article = await this.articleService.findBySlug(slug, req.user)
-
-        return { article: article }
+        return article
     }
 
     @UseGuards(AuthGuard)
@@ -128,7 +213,7 @@ export class ArticleController {
         @TypedParam("slug") slug: string,
         @TypedBody() input: IUpdateArticleInput,
         @Req() req: AuthedRequest,
-    ): Promise<{ article: ArticleDTO }> {
+    ): Promise<{ article: _ArticleRO }> {
         const article = await this.articleService.update(slug, input, req.user)
 
         return { article: article }
@@ -139,7 +224,7 @@ export class ArticleController {
     async favoriteArticle(
         @TypedParam("slug") slug: string,
         @Req() req: AuthedRequest,
-    ): Promise<{ article: ArticleDTO }> {
+    ): Promise<{ article: _ArticleRO }> {
         try {
             const article = await this.articleService.favorite(slug, req.user)
             return { article: article }
@@ -176,7 +261,7 @@ export class ArticleController {
     async unfavoriteArticle(
         @TypedParam("slug") slug: string,
         @Req() req: AuthedRequest,
-    ): Promise<{ article: ArticleDTO }> {
+    ): Promise<{ article: _ArticleRO }> {
         try {
             const article = await this.articleService.unfavorite(slug, req.user)
             return { article: article }
@@ -243,7 +328,7 @@ export class ArticleController {
         @Req() req: AuthedRequest,
     ): Promise<void> {
         try {
-            console.log({slug,id})
+            console.log({ slug, id })
             void (await this.commentService.delete(slug, id, req.user))
         } catch (error) {
             if (error instanceof NotCommentAuthorException) {
@@ -272,6 +357,7 @@ export class ArticleController {
 }
 
 @Controller("tags")
+@ApiTags("tags")
 export class TagController {
     constructor(private readonly articleService: ArticleService) {}
 

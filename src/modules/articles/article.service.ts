@@ -2,17 +2,16 @@ import { Injectable, UnauthorizedException } from "@nestjs/common"
 import { randomFillSync } from "node:crypto"
 import slugify from "slugify"
 import { AuthedRequestPayload } from "../auth/interfaces/auth-payload"
-import { CommentRO } from "../comment/comment.dto"
 import { UserRepository } from "../user/user.repository"
-import { ArticleDTO } from "./article.dto"
+import { ArticleRO, _ArticleRO } from "./article.dto"
 import { ArticleEntity } from "./article.entity"
 import { ArticleRepository } from "./article.repository"
 import {
     ArticleNotFoundException,
     NotArticleAuthorException,
 } from "./exceptions"
-import { ICreateArticleInput } from "./inputs/create"
-import { IUpdateArticleInput } from "./inputs/update"
+import { CreateArticleDTO } from "./inputs/create"
+import { UpdateArticleDTO } from "./inputs/update"
 import { ArticleFeedType } from "./interfaces/repository"
 import { IArticleSearchParams } from "./interfaces/search-params"
 
@@ -27,7 +26,7 @@ export class ArticleService {
         searchParams: IArticleSearchParams,
         user?: AuthedRequestPayload,
         feedType: ArticleFeedType = ArticleFeedType.GLOBAL,
-    ) {
+    ): Promise<ArticleRO[]> {
         const articles = await this.articleRepository.findAll(
             searchParams,
             user,
@@ -40,15 +39,15 @@ export class ArticleService {
     public async findBySlug(
         slug: string,
         user?: AuthedRequestPayload,
-    ): Promise<ArticleDTO | null> {
+    ): Promise<ArticleRO | null> {
         const article = await this.articleRepository.findOneBySlug(slug, user)
         return article
     }
 
     public async create(
-        input: ICreateArticleInput,
+        input: CreateArticleDTO,
         user: AuthedRequestPayload,
-    ): Promise<ArticleDTO> {
+    ): Promise<ArticleRO> {
         const { title, body, tagList, description } = input.article
         let slug = slugify(title, { lower: true })
 
@@ -62,23 +61,24 @@ export class ArticleService {
         if (!author) throw new Error("Author not found")
 
         const article = await this.articleRepository.save(
-            new ArticleEntity()
-                .setTitle(title)
-                .setSlug(slug)
-                .setBody(body)
-                .setDescription(description)
-                .setTagList(tagList ?? [])
-                .setAuthor(author),
+            new ArticleEntity({
+                title,
+                slug,
+                body,
+                description,
+                tagList: tagList ?? [],
+                author,
+            }),
         )
 
-        return new ArticleDTO(article, user.id)
+        return new ArticleRO(article, user.id)
     }
 
     public async update(
         slug: string,
-        input: IUpdateArticleInput,
+        input: UpdateArticleDTO,
         user: AuthedRequestPayload,
-    ): Promise<ArticleDTO> {
+    ): Promise<ArticleRO> {
         const { tagList, body, title, description } = input.article
 
         const article = await this.articleRepository.findOneBy({ slug: slug })
@@ -88,15 +88,16 @@ export class ArticleService {
 
         const newTagList = new Set([...article.tagList, ...(tagList ?? [])])
 
-        article
-            .setTitle(title)
-            .setBody(body)
-            .setDescription(description)
-            .setTagList(Array.from(newTagList))
+        article.update({
+            title,
+            body,
+            description,
+            tagList: Array.from(newTagList),
+        })
 
         void (await this.articleRepository.update({ id: article.id }, article))
 
-        return new ArticleDTO(article, user.id)
+        return new ArticleRO(article, user.id)
     }
 
     public async delete(
@@ -117,7 +118,7 @@ export class ArticleService {
     public async favorite(
         slug: string,
         user: AuthedRequestPayload,
-    ): Promise<ArticleDTO> {
+    ): Promise<ArticleRO> {
         const currentUser = await this.userRepository.findById(user.id)
 
         if (!currentUser) throw new UnauthorizedException()
@@ -136,7 +137,7 @@ export class ArticleService {
     public async unfavorite(
         slug: string,
         user: AuthedRequestPayload,
-    ): Promise<ArticleDTO> {
+    ): Promise<ArticleRO> {
         const currentUser = await this.userRepository.findById(user.id)
 
         if (!currentUser) throw new UnauthorizedException()

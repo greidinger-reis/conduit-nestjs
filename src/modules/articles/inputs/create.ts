@@ -1,10 +1,21 @@
-export interface _ICreateArticleInput {
+import { ApiProperty } from "@nestjs/swagger"
+
+export class _CreateArticleDTO {
+    @ApiProperty()
     title: string
+    @ApiProperty()
     description: string
+    @ApiProperty()
     body: string
+    @ApiProperty({ type: [String], required: false })
     tagList?: string[]
 }
 
-export interface ICreateArticleInput {
-    article: _ICreateArticleInput
+export class CreateArticleDTO {
+    @ApiProperty()
+    article: _CreateArticleDTO
+
+    constructor(dto: _CreateArticleDTO) {
+        Object.assign(this.article, dto)
+    }
 }

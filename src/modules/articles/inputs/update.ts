@@ -1,5 +1,7 @@
-import { _ICreateArticleInput } from "./create"
+import { ApiProperty } from "@nestjs/swagger"
+import { CreateArticleDTO, _CreateArticleDTO } from "./create"
 
-export interface IUpdateArticleInput {
-    article: Partial<_ICreateArticleInput>
+export class UpdateArticleDTO {
+    @ApiProperty()
+    article: Partial<_CreateArticleDTO>
 }

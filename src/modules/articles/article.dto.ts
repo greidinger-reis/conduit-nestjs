@@ -2,7 +2,7 @@ import { ApiProperty } from "@nestjs/swagger"
 import { AuthedRequestPayload } from "../auth/interfaces/auth-payload"
 import { ArticleEntity } from "./article.entity"
 
-export class ArticleDTO {
+export class _ArticleRO {
     @ApiProperty()
     slug: string
 
@@ -63,5 +63,32 @@ export class ArticleDTO {
                     (follower) => follower.id === currentUserId,
                 ) ?? false,
         }
+    }
+}
+
+export class ArticleRO {
+    @ApiProperty()
+    article: _ArticleRO
+
+    constructor(
+        articleEntity: ArticleEntity,
+        currentUserId?: AuthedRequestPayload["id"],
+    ) {
+        this.article = new _ArticleRO(articleEntity, currentUserId)
+    }
+}
+
+export class MultipleArticlesRO {
+    @ApiProperty()
+    articles: _ArticleRO[]
+
+    @ApiProperty()
+    articlesCount: number
+
+    constructor(
+        articles: _ArticleRO[],
+    ) {
+        this.articles = articles
+        this.articlesCount = articles.length
     }
 }
