@@ -1,4 +1,4 @@
-export class UserNameAlreadyExistsException extends Error {
+export class UserNameAlreadyInUseException extends Error {
     constructor() {
         super("Username already in use")
     }

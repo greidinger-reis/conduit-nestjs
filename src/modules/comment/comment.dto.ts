@@ -4,7 +4,7 @@ import { CommentEntity } from "./comment.entity"
 
 export class CommentRO {
     @ApiProperty()
-    id: string 
+    id: string
     @ApiProperty()
     createdAt: Date
     @ApiProperty()
@@ -12,7 +12,7 @@ export class CommentRO {
     @ApiProperty()
     body: string
     @ApiProperty()
-    author: ProfileRO 
+    author: ProfileRO
 
     constructor(entity: CommentEntity, currentUser?: string) {
         this.id = entity.id

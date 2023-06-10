@@ -85,9 +85,7 @@ export class MultipleArticlesRO {
     @ApiProperty()
     articlesCount: number
 
-    constructor(
-        articles: _ArticleRO[],
-    ) {
+    constructor(articles: _ArticleRO[]) {
         this.articles = articles
         this.articlesCount = articles.length
     }

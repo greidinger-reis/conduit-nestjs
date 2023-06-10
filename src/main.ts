@@ -12,10 +12,12 @@ async function bootstrap() {
     const app = await NestFactory.create<NestFastifyApplication>(
         AppModule,
         new FastifyAdapter(),
-        { cors: true }
+        { cors: true },
     )
 
+    // @ts-expect-error wtf
     app.register(fastifyCsrf)
+    // @ts-expect-error wtf
     app.register(helmet)
 
     app.setGlobalPrefix("api")

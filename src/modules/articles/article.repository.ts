@@ -2,7 +2,7 @@ import { Injectable } from "@nestjs/common"
 import { DataSource, Repository } from "typeorm"
 import { AuthedRequestPayload } from "../auth/interfaces/auth-payload"
 import { UserEntity } from "../user/user.entity"
-import { ArticleRO } from "./article.dto"
+import { ArticleRO, _ArticleRO } from "./article.dto"
 import { ArticleEntity } from "./article.entity"
 import {
     ArticleNotFoundException,
@@ -38,7 +38,7 @@ export class ArticleRepository
         searchParams: IArticleSearchParams,
         user?: AuthedRequestPayload,
         feedType: ArticleFeedType = ArticleFeedType.GLOBAL,
-    ): Promise<ArticleRO[]> {
+    ): Promise<_ArticleRO[]> {
         const query = this.createQueryBuilder("article")
             .leftJoinAndSelect("article.author", "author")
             .leftJoinAndSelect("article.favoritedBy", "favoritedBy")
@@ -75,7 +75,7 @@ export class ArticleRepository
         return await query
             .getMany()
             .then((articles) =>
-                articles.map((article) => new ArticleRO(article, user?.id)),
+                articles.map((article) => new _ArticleRO(article, user?.id)),
             )
     }
 

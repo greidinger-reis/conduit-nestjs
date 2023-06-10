@@ -1,18 +1,17 @@
-import { AuthedRequestPayload } from "../auth/interfaces/auth-payload"
-import { CommentRO } from "./comment.dto"
-import { CommentRepository } from "./comment.repository"
 import { Injectable } from "@nestjs/common"
-import { ICreateCommentInput } from "./inputs/create"
-import { CommentEntity } from "./comment.entity"
-import { UserRepository } from "../user/user.repository"
-import { UserNotFoundException } from "../user/exceptions"
-import { ArticleService } from "../articles/article.service"
 import { ArticleRepository } from "../articles/article.repository"
 import { ArticleNotFoundException } from "../articles/exceptions"
+import { AuthedRequestPayload } from "../auth/interfaces/auth-payload"
+import { UserNotFoundException } from "../user/exceptions"
+import { UserRepository } from "../user/user.repository"
+import { CommentRO } from "./comment.dto"
+import { CommentEntity } from "./comment.entity"
+import { CommentRepository } from "./comment.repository"
 import {
     CommentNotFoundException,
     NotCommentAuthorException,
 } from "./exceptions"
+import { CreateCommentDTO } from "./inputs/create"
 
 @Injectable()
 export class CommentService {
@@ -35,7 +34,7 @@ export class CommentService {
 
     public async create(
         slug: string,
-        input: ICreateCommentInput,
+        input: CreateCommentDTO,
         currentUser: AuthedRequestPayload,
     ): Promise<CommentRO> {
         const authorEntity = await this.userRepository.findById(currentUser.id)
@@ -51,10 +50,11 @@ export class CommentService {
             throw new ArticleNotFoundException()
         }
 
-        const comment = new CommentEntity()
-            .setBody(input.comment.body)
-            .setAuthor(authorEntity)
-            .setArticle(articleEntity)
+        const comment = new CommentEntity({
+            body: input.comment.body,
+            author: authorEntity,
+            article: articleEntity,
+        })
 
         await this.commentRepository.save(comment)
 

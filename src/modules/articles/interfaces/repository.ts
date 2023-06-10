@@ -1,6 +1,6 @@
 import { AuthedRequestPayload } from "@/modules/auth/interfaces/auth-payload"
 import { IUserEntity } from "@/modules/user/interfaces/entity"
-import { ArticleDTO } from "../article.dto"
+import { ArticleRO, _ArticleRO } from "../article.dto"
 import { IArticleSearchParams } from "./search-params"
 
 export enum ArticleFeedType {
@@ -12,22 +12,15 @@ export interface IArticleRepository {
     findOneBySlug(
         slug: string,
         user?: AuthedRequestPayload,
-    ): Promise<ArticleDTO | null>
+    ): Promise<ArticleRO | null>
     findAll(
         searchParams: IArticleSearchParams,
         user?: AuthedRequestPayload,
         feedType?: ArticleFeedType,
-    ): Promise<ArticleDTO[]>
+    ): Promise<_ArticleRO[]>
 
-    favoriteOneBySlug(
-        slug: string,
-        user?: IUserEntity,
-    ): Promise<ArticleDTO>
+    favoriteOneBySlug(slug: string, user?: IUserEntity): Promise<ArticleRO>
 
-    unfavoriteOneBySlug(
-        slug: string,
-        user?: IUserEntity,
-    ): Promise<ArticleDTO>
-
+    unfavoriteOneBySlug(slug: string, user?: IUserEntity): Promise<ArticleRO>
     findAllTags(): Promise<string[]>
 }

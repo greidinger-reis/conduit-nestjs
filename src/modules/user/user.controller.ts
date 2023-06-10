@@ -38,7 +38,7 @@ import {
     EmailAlreadyInUseException,
     InvalidCredentialsException,
     UserAlreadyFollowedException,
-    UserNameAlreadyExistsException,
+    UserNameAlreadyInUseException,
     UserNotFollowedException,
     UserNotFoundException,
 } from "./exceptions"
@@ -112,7 +112,7 @@ export class UsersController {
             //I have no idea why I have to return {user:user} instead of just {user}
             return { user: user }
         } catch (error) {
-            if (error instanceof UserNameAlreadyExistsException) {
+            if (error instanceof UserNameAlreadyInUseException) {
                 throw new HttpException(
                     {
                         status: HttpStatus.CONFLICT,
@@ -182,14 +182,53 @@ export class UserController {
     @ApiOkResponse({ type: UserRO, description: "User response object" })
     @ApiUnauthorizedResponse({ description: "User not authenticated" })
     @ApiBadRequestResponse({ description: "Validation error (body object)" })
+    @ApiConflictResponse({
+        description: "Username or email already in use",
+    })
     public async updateCurrentUser(
         @Req() req: AuthedRequest,
         @TypedBody()
         body: UpdateUserDTO,
     ) {
-        const user = await this.usersService.updateUser(req.user, body)
-
-        return { user: user }
+        try {
+            const user = await this.usersService.updateUser(req.user, body)
+            return { user: user }
+        } catch (error) {
+            if(error instanceof UserNameAlreadyInUseException){
+                throw new HttpException(
+                    {
+                        status: HttpStatus.CONFLICT,
+                        error: error.message,
+                    },
+                    HttpStatus.CONFLICT,
+                )
+            }
+            if(error instanceof EmailAlreadyInUseException){
+                throw new HttpException(
+                    {
+                        status: HttpStatus.CONFLICT,
+                        error: error.message,
+                    },
+                    HttpStatus.CONFLICT,
+                )
+            }
+            if(error instanceof UserNotFoundException){
+                throw new HttpException(
+                    {
+                        status: HttpStatus.NOT_FOUND,
+                        error: error.message,
+                    },
+                    HttpStatus.NOT_FOUND,
+                )
+            }
+            throw new HttpException(
+                {
+                    status: HttpStatus.INTERNAL_SERVER_ERROR,
+                    error: (error as Error).message,
+                },
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            )
+        }
     }
 }
 

@@ -12,7 +12,7 @@ WORKDIR /app
 # Set production environment
 ENV NODE_ENV=production
 
-ARG PNPM_VERSION=8.5.1
+ARG PNPM_VERSION=8.6.1
 RUN npm install -g pnpm@$PNPM_VERSION
 
 

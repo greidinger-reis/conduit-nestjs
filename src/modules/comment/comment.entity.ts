@@ -17,18 +17,12 @@ export class CommentEntity extends AbstractEntity implements ICommentEntity {
     @JoinColumn({ name: "article_id" })
     article: ArticleEntity
 
-    public setBody(body: string){
-        this.body = body
-        return this
+    constructor(entity?: Partial<CommentEntity>) {
+        super()
+        Object.assign(this, entity)
     }
 
-    public setAuthor(author: UserEntity){
-        this.author = author
-        return this
-    }
-
-    public setArticle(article: ArticleEntity){
-        this.article = article
-        return this
+    update(entity: Partial<CommentEntity>) {
+        Object.assign(this, entity)
     }
 }

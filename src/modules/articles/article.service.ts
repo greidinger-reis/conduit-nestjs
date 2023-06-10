@@ -26,7 +26,7 @@ export class ArticleService {
         searchParams: IArticleSearchParams,
         user?: AuthedRequestPayload,
         feedType: ArticleFeedType = ArticleFeedType.GLOBAL,
-    ): Promise<ArticleRO[]> {
+    ): Promise<_ArticleRO[]> {
         const articles = await this.articleRepository.findAll(
             searchParams,
             user,

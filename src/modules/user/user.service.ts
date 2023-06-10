@@ -6,7 +6,7 @@ import { ProfileRO, UserRO } from "./dto/response-objects"
 import {
     EmailAlreadyInUseException,
     InvalidCredentialsException,
-    UserNameAlreadyExistsException,
+    UserNameAlreadyInUseException,
     UserNotFoundException,
 } from "./exceptions"
 import { UserEntity } from "./user.entity"
@@ -36,7 +36,7 @@ export class UserService {
         if (foundEmail) throw new EmailAlreadyInUseException()
 
         const foundName = await this.userRepository.findByName(input.user.name)
-        if (foundName) throw new UserNameAlreadyExistsException()
+        if (foundName) throw new UserNameAlreadyInUseException()
 
         const user = await this.userRepository.save(new UserEntity(input.user))
 
@@ -77,7 +77,7 @@ export class UserService {
         if (user.name) {
             const foundName = await this.userRepository.findByName(user.name)
             if (foundName) {
-                throw new UserNameAlreadyExistsException()
+                throw new UserNameAlreadyInUseException()
             }
         }
 
